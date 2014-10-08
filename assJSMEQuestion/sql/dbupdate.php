@@ -28,3 +28,15 @@
 	$ilDB->createTable("il_qpl_qst_jsme_data", $fields);
 	$ilDB->addPrimaryKey("il_qpl_qst_jsme_data", array("question_fi"));	
 ?>
+<#3>
+<?php
+    if(!$ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'smiles'))
+    {
+        $ilDB->addTableColumn('il_qpl_qst_jsme_data', 'smiles', array(
+                'type' => 'text',
+                'length' => 200,
+                'notnull' => false,
+            )
+        );
+    }
+?>

@@ -17,6 +17,7 @@ class assJSMEQuestion extends assQuestion
 	var $optionString = "";
 	// for manuel correction
 	var $sampleSolution = "";
+	var $smilesSolution = "";
 	
 	/**
 	* assJSMEQuestion constructor
@@ -80,6 +81,10 @@ class assJSMEQuestion extends assQuestion
 	function setSampleSolution($solution){
 		$this->sampleSolution = $solution;
 	}
+
+	function setSmilesSolution($smilesSolution){
+		$this->smilesSolution = $smilesSolution;
+	}
 	
 	function getOptionString()
 	{
@@ -89,7 +94,11 @@ class assJSMEQuestion extends assQuestion
 	function getSampleSolution(){
 		return $this->sampleSolution;
 	}
-	
+
+	function getSmilesSolution(){
+		return $this->smilesSolution;
+	}
+
 	/**
 	* Load a assJSMEQuestion object from a database
 	*
@@ -123,12 +132,13 @@ class assJSMEQuestion extends assQuestion
 			$this->setEstimatedWorkingTime(substr($data["working_time"], 0, 2), substr($data["working_time"], 3, 2), substr($data["working_time"], 6, 2));			
 		}
 		
-		$resultCheck= $ilDB->queryF("SELECT option_string, solution FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
+		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
 		if($ilDB->numRows($resultCheck) == 1)
 		{
 			$data = $ilDB->fetchAssoc($resultCheck);
 			$this->setOptionString($data["option_string"]);
 			$this->setSampleSolution($data["solution"]);
+			$this->setSmilesSolution($data["smiles"]);		
 		}
 					
 		parent::loadFromDb($question_id);
@@ -148,12 +158,13 @@ class assJSMEQuestion extends assQuestion
 			array("integer"),
 			array($this->getId())
 		);
-		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution) VALUES (%s, %s, %s)", 
-				array("integer", "text", "text"),
+		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution, smiles) VALUES (%s, %s, %s, %s)", 
+				array("integer", "text", "text", "text"),
 				array(
 					$this->getId(),
 					$this->optionString,
-					$this->sampleSolution
+					$this->sampleSolution,
+					$this->smilesSolution
 				)
 		);
 			
@@ -340,7 +351,8 @@ class assJSMEQuestion extends assQuestion
 		);
 
 		$entered_values = false;		
-		$value = $_POST['sampleSolution'];		
+		$value = $_POST['sampleSolution'];
+		$value2 = $_POST['smilesSolution'];
 		
 		$result = $ilDB->queryF("SELECT test_fi FROM tst_active WHERE active_id = %s",
 			array('integer'),
@@ -362,7 +374,7 @@ class assJSMEQuestion extends assQuestion
 				"active_fi" => array("integer", $active_id),
 				"question_fi" => array("integer", $this->getId()),
 				"value1" => array("clob", $value),
-				"value2" => array("clob", ""),
+				"value2" => array("clob", $value2),
 				"pass" => array("integer", $pass),
 				"tstamp" => array("integer", time())
 			));					

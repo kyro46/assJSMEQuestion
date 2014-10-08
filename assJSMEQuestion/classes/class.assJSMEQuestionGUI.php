@@ -72,7 +72,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		// JSME-Applet for sampleSolution
 		include_once("./Services/Form/classes/class.ilCustomInputGUI.php");
 		$sampleSolution = new ilCustomInputGUI($plugin->txt("sampleSolution"), "sampleSolution");
-		$template = $this->getJsmeOutputTemplate("", $this->object->getOptionString(), $this->object->getSampleSolution() );
+		$template = $this->getJsmeOutputTemplate("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution() );
 		$sampleSolution->setHtml($template->get());
 		$form->addItem($sampleSolution);												
 		
@@ -135,6 +135,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 			);							
 			$this->object->setOptionString($_POST["optionString"]);
 			$this->object->setSampleSolution($_POST["sampleSolution"]);
+			$this->object->setSmilesSolution($_POST["smilesSolution"]);
 																
 			return 0;
 		}
@@ -147,13 +148,14 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	/**
 	 * Get the output for preview and test
 	 */
-	function getJsmeOutputTemplate($question, $options, $solution, $temp="output.html"){
+	function getJsmeOutputTemplate($question, $options, $solution ,$smiles, $temp="output.html"){
 		global $tpl;			
 		$plugin       = $this->object->getPlugin();		
 		$template     = $plugin->getTemplate($temp);
 		$tpl->addJavaScript($plugin->getDirectory().'/templates/jsme/jsme.nocache.js');
 		$template->setVariable("QUESTIONTEXT", $this->object->prepareTextareaOutput($question, TRUE));		
 		$template->setVariable("MOLECULE",$solution);
+		$template->setVariable("SMILES",$smiles);
 		$template->setVariable("OPTIONS", $options);		
 		return $template;
 	}		
@@ -166,7 +168,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 */
 	function getPreview($show_question_only = FALSE)
 	{		
-		$template = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), "");		
+		$template = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), "", "");		
 		$questionoutput = $template->get();
 		if(!$show_question_only)
 		{
@@ -224,7 +226,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 			}
 		}
 		
-		$template = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), $user_solution[0]["value1"]);		
+		$template = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), $user_solution[0]["value1"], $user_solution[0]["value2"]);		
 		$questionoutput = $template->get();
 		$pageoutput = $this->outQuestionPage("", $is_postponed, $active_id, $questionoutput);
 		return $pageoutput;		
@@ -272,7 +274,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		
 		if ($show_correct_solution)
 		{			
-			$template = $this->getJsmeOutputTemplate("", $this->object->getOptionString(), $this->object->getSampleSolution(), "solution.html");		
+			$template = $this->getJsmeOutputTemplate("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), "solution.html");		
 			$template->setVariable("ID", 'S'.$this->object->getId());
 			return $template->get();			
 			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden ;)
@@ -281,13 +283,13 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		// generate the question output
 		$solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html",TRUE, TRUE, "Modules/TestQuestionPool");
 		
-		$templateUser = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), $user_solution[0]["value1"], "solution.html");	
+		$templateUser = $this->getJsmeOutputTemplate($this->object->getQuestion(), $this->object->getOptionString(), $user_solution[0]["value1"], $user_solution[0]["value2"], "solution.html");	
 		$templateUser->setVariable("ID", 'U'.$this->object->getId());	
 		$questionoutput = $templateUser->get();
 		
 		if ($show_manual_scoring && strlen($this->object->getSampleSolution()) > 0 )
 		{
-			$templateSample = $this->getJsmeOutputTemplate($this->object->getPlugin()->txt("sampleSolution"), $this->object->getOptionString(), $this->object->getSampleSolution(), "solution.html");
+			$templateSample = $this->getJsmeOutputTemplate($this->object->getPlugin()->txt("sampleSolution"), $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), "solution.html");
 			$templateSample->setVariable("ID", 'S'.$this->object->getId());
 			$questionoutput .= "<br>" . $templateSample->get();
 		}

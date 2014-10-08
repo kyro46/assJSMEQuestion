@@ -70,6 +70,11 @@ class assJSMEQuestionExport extends assQuestionExport
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "sample_solution");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getSampleSolution());
 		$a_xml_writer->xmlEndTag("qtimetadatafield");			
+
+		$a_xml_writer->xmlStartTag("qtimetadatafield");
+		$a_xml_writer->xmlElement("fieldlabel", NULL, "smiles_solution");
+		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getSmilesSolution());
+		$a_xml_writer->xmlEndTag("qtimetadatafield");
 		
 		$a_xml_writer->xmlEndTag("qtimetadata");
 		$a_xml_writer->xmlEndTag("itemmetadata");

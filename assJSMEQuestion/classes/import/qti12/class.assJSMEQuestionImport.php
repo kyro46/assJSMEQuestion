@@ -47,6 +47,8 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->setPoints($item->getMetadataEntry("points"));
 		$this->object->setOptionString($item->getMetadataEntry("option_string"));
 		$this->object->setSampleSolution($item->getMetadataEntry("sample_solution"));
+		$this->object->setSmilesSolution($item->getMetadataEntry("smiles_solution"));
+		
 		
 		$this->object->saveToDb('', false);
 
