@@ -12,8 +12,10 @@ Using the free JSME-Editor, the questiontype allows to create molecules with an 
 Install the plugin (e.g. with the provided .ZIP) to
 * Customizing/global/plugins/Modules/TestQuestionPool/Questions
 
-and activate it in the ILIAS-Admin-GUI. Activate manual scoring for this type. 
-Automatic scoring with comparison of SMILE-Code may be possible in later versions.
+and activate it in the ILIAS-Admin-GUI. 
+
+Automatic scoring with comparison of SMILE-Code IS implemented, but (due to SMILES-Notation) not valid for molecules with stereo features. Please be cautious.
+Activate manual scoring for better control.
 
 ### Known Issues ###
 
