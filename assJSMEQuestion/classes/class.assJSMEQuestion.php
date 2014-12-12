@@ -290,32 +290,32 @@ class assJSMEQuestion extends assQuestion
 	 */
 	function calculateReachedPoints($active_id, $pass = NULL, $returndetails = FALSE)
 	{
+        if( $returndetails )
+        {
+            throw new ilTestException('return details not implemented for '.__METHOD__);
+        }
+		
 		global $ilDB;
 		
 		if (is_null($pass))
 		{
 			$pass = $this->getSolutionMaxPass($active_id);
 		}
-		/*
-		$result = $ilDB->queryF("SELECT * FROM tst_solutions WHERE active_fi = %s AND question_fi = %s AND pass = %s",
-			array(
-				"integer", 
-				"integer",
-				"integer"
-			),
-			array(
-				$active_id,
-				$this->getId(),
-				$pass
-			)
-		);
-		*/
-		$points = 0; // manuelle korrektur notwendig		
-		/*
-		$data = $ilDB->fetchAssoc($result);
-		$value1 = $data['value1'];
-		$value2 = $data['value2'];		
-		*/
+
+		$query = "SELECT value2 FROM tst_solutions "
+            . " WHERE active_fi = %s AND question_fi = %s AND pass = %s ";
+			
+        $result = $ilDB->queryF($query,
+            array('integer','integer','integer'),
+            array($active_id, $this->getId(), $pass)
+        );
+		$resultrow = $ilDB->fetchAssoc($result);
+
+		if( $this->smilesSolution == $resultrow["value2"] )
+			{
+			$points = $this->getMaximumPoints();
+			}	
+			
 		return $points;
 	}	
 	
