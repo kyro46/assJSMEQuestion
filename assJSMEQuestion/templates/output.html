@@ -7,7 +7,7 @@
 </form>
 
 <textarea rows="10" cols="50" id="answer" style="display:none;">{MOLECULE}</textarea>
-<textarea rows="1" cols="66" id="smilestext" disabled="disabled">{SMILES}</textarea>
+<label id="smileslabel">{SMILES}</label>
 
 <script>
     //this function will be called after the JavaScriptApplet code has been loaded.
@@ -49,8 +49,7 @@
 		document.getElementById("smilesString").value = smiles;
 		
 		document.getElementById("answer").placeholder = jme;
-		document.getElementById("smilestext").placeholder = smiles;
-
+		document.getElementById("smileslabel").innerHTML = smiles;
 
 		document.getElementById("answerForm").submit();				
 	}
