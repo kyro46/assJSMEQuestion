@@ -246,7 +246,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 * 
 	 * @param boolean	show only the question instead of embedding page (true/false)
 	 */
-	public function getPreview($show_question_only = FALSE)
+	public function getPreview($show_question_only = false, $showInlineFeedback = false)
 	{
 		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), "", "");		
 		$questionoutput = $template->get();
