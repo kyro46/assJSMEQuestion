@@ -1,4 +1,5 @@
-# ILIAS 4.4 JSME-Question #
+# assJSMEQuestion
+JSME-Questiontypeplugin for ILIAS 4.4.x/5.0.x/5.1.x
 
 ### Questiontype that allows the creation of molecules ###
 
@@ -23,4 +24,4 @@ Activate manual scoring for better control.
 
 ### Credits ###
 * Developing plugin for ILIAS 4.4 by Yves Annanias, University Halle 2014
-* Minor refactoring by Christoph Jobst, University Halle 2014
+* Refactoring by Christoph Jobst, University Halle 2014/2015/2016
