@@ -8,7 +8,7 @@ For ILIAS 4.3, 4.4 and 5.0 see the [**Releases**](https://github.com/kyro46/assJ
 Using the free JSME-Editor, the questiontype allows to create molecules with an easy to use interface.
 
 [**JSME-Editor Homepage**](http://peter-ertl.com/jsme/)
-[**JSME-Editor Demo**](http://peter-ertl.com/jsme/JSME_2014-06-28/JSME.html)
+[**JSME-Editor Demo**](http://peter-ertl.com/jsme/JSME_2015-12-06/JSME.html)
 
 ### Usage ###
 
