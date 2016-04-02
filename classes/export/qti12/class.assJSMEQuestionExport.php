@@ -3,16 +3,19 @@
 include_once "./Modules/TestQuestionPool/classes/export/qti12/class.assQuestionExport.php";
 
 /**
-* assJSMEQuestionExport export
+* Class for JSMEQuestion export
 *
 * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
-* @version	$Id:  $
-* @ingroup ModulesTestQuestionPool
+* @version	$Id: $
+* @ingroup 	ModulesTestQuestionPool
 */
 class assJSMEQuestionExport extends assQuestionExport
 {
 	/**
 	* Returns a QTI xml representation of the question
+	*
+	* Returns a QTI xml representation of the question and sets the internal
+	* domxml variable with the DOM XML representation of the QTI xml representation
 	*
 	* @return string The QTI xml representation of the question
 	* @access public
@@ -28,8 +31,7 @@ class assJSMEQuestionExport extends assQuestionExport
 		$a_xml_writer->xmlStartTag("questestinterop");
 		$attrs = array(
 			"ident" => "il_".IL_INST_ID."_qst_".$this->object->getId(),
-			"title" => $this->object->getTitle(),
-			"maxattempts" => $this->object->getNrOfTries()
+			"title" => $this->object->getTitle()
 		);
 		$a_xml_writer->xmlStartTag("item", $attrs);
 		// add question description
@@ -41,6 +43,7 @@ class assJSMEQuestionExport extends assQuestionExport
 		// add ILIAS specific metadata
 		$a_xml_writer->xmlStartTag("itemmetadata");
 		$a_xml_writer->xmlStartTag("qtimetadata");
+		
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "ILIAS_VERSION");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $ilias->getSetting("ilias_version"));
@@ -54,34 +57,28 @@ class assJSMEQuestionExport extends assQuestionExport
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getAuthor());
 		$a_xml_writer->xmlEndTag("qtimetadatafield");
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
-		$a_xml_writer->xmlElement("fieldlabel", NULL, "POINTS");
+		$a_xml_writer->xmlElement("fieldlabel", NULL, "points");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getPoints());
-		$a_xml_writer->xmlEndTag("qtimetadatafield");
-
-		//Question specific fields
+		$a_xml_writer->xmlEndTag("qtimetadatafield");	
+		//
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "option_string");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getOptionString());
-		$a_xml_writer->xmlEndTag("qtimetadatafield");
+		$a_xml_writer->xmlEndTag("qtimetadatafield");	
 		//
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "sample_solution");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getSampleSolution());
-		$a_xml_writer->xmlEndTag("qtimetadatafield");
-		
+		$a_xml_writer->xmlEndTag("qtimetadatafield");			
+
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "smiles_solution");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getSmilesSolution());
 		$a_xml_writer->xmlEndTag("qtimetadatafield");
-		//End Question specific fields
 		
-		// additional content editing information
-		$this->addAdditionalContentEditingModeInformation($a_xml_writer);
-		$this->addGeneralMetadata($a_xml_writer);
-
 		$a_xml_writer->xmlEndTag("qtimetadata");
 		$a_xml_writer->xmlEndTag("itemmetadata");
-
+        
 		// PART I: qti presentation
 		$attrs = array(
 			"label" => $this->object->getTitle()
@@ -93,30 +90,11 @@ class assJSMEQuestionExport extends assQuestionExport
 		$this->object->addQTIMaterial($a_xml_writer, $this->object->getQuestion());
 
 		$a_xml_writer->xmlEndTag("flow");
-		$a_xml_writer->xmlEndTag("presentation");
-
-
+		$a_xml_writer->xmlEndTag("presentation");				
+		
 		// PART III: qti itemfeedback
-		$feedback_allcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation(
-			$this->object->getId(), true
-		);
-
-		$feedback_onenotcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation(
-			$this->object->getId(), false
-		);
-
-		$attrs = array(
-			"ident" => "Correct",
-			"view" => "All"
-		);
-		$a_xml_writer->xmlStartTag("itemfeedback", $attrs);
-		// qti flow_mat
-		$a_xml_writer->xmlStartTag("flow_mat");
-		$a_xml_writer->xmlStartTag("material");
-		$a_xml_writer->xmlElement("mattext");
-		$a_xml_writer->xmlEndTag("material");
-		$a_xml_writer->xmlEndTag("flow_mat");
-		$a_xml_writer->xmlEndTag("itemfeedback");
+		$feedback_allcorrect = $this->object->getFeedbackGeneric(1);
+		$feedback_onenotcorrect = $this->object->getFeedbackGeneric(0);
 		if (strlen($feedback_allcorrect))
 		{
 			$attrs = array(
@@ -143,7 +121,7 @@ class assJSMEQuestionExport extends assQuestionExport
 			$a_xml_writer->xmlEndTag("flow_mat");
 			$a_xml_writer->xmlEndTag("itemfeedback");
 		}
-
+		
 		$a_xml_writer->xmlEndTag("item");
 		$a_xml_writer->xmlEndTag("questestinterop");
 
@@ -155,6 +133,7 @@ class assJSMEQuestionExport extends assQuestionExport
 		}
 		return $xml;
 	}
+
 }
 
 ?>

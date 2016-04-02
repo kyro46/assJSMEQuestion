@@ -3,128 +3,53 @@
 include_once "./Modules/TestQuestionPool/classes/import/qti12/class.assQuestionImport.php";
 
 /**
- * Class for assJSMEQuestion import
- *
- * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
- * @version	$Id: $
- * @ingroup 	ModulesTestQuestionPool
- */
+* Class for JSMEQuestion import
+*
+* @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+* @version	$Id: $
+* @ingroup 	ModulesTestQuestionPool
+*/
 class assJSMEQuestionImport extends assQuestionImport
 {
 	/**
-	 * Creates a question from a QTI file
-	 *
-	 * Receives parameters from a QTI parser and creates a valid ILIAS question object
-	 *
-	 * @param object $item The QTI item object
-	 * @param integer $questionpool_id The id of the parent questionpool
-	 * @param integer $tst_id The id of the parent test if the question is part of a test
-	 * @param object $tst_object A reference to the parent test object
-	 * @param integer $question_counter A reference to a question counter to count the questions of an imported question pool
-	 * @param array $import_mapping An array containing references to included ILIAS objects
-	 * @access public
-	 */
+	* Creates a question from a QTI file
+	*
+	* Receives parameters from a QTI parser and creates a valid ILIAS question object
+	*
+	* @param object $item The QTI item object
+	* @param integer $questionpool_id The id of the parent questionpool
+	* @param integer $tst_id The id of the parent test if the question is part of a test
+	* @param object $tst_object A reference to the parent test object
+	* @param integer $question_counter A reference to a question counter to count the questions of an imported question pool
+	* @param array $import_mapping An array containing references to included ILIAS objects
+	* @access public
+	*/
 	function fromXML(&$item, $questionpool_id, &$tst_id, &$tst_object, &$question_counter, &$import_mapping)
 	{
-		global $ilUser, $ilLog;
+		global $ilUser;
 
 		// empty session variable for imported xhtml mobs
 		unset($_SESSION["import_mob_xhtml"]);
-		$presentation = $item->getPresentation();
+		$presentation = $item->getPresentation(); 
 		$duration = $item->getDuration();
 		$now = getdate();
 		$created = sprintf("%04d%02d%02d%02d%02d%02d", $now['year'], $now['mon'], $now['mday'], $now['hours'], $now['minutes'], $now['seconds']);
 
-		// get the generic feedbach
 		$feedbacksgeneric = array();
-		if (isset($item->itemfeedback))
-		{
-			foreach ($item->itemfeedback as $ifb)
-			{
-				if (strcmp($ifb->getIdent(), "response_allcorrect") == 0)
-				{
-					// found a feedback for the identifier
-					if (count($ifb->material))
-					{
-						foreach ($ifb->material as $material)
-						{
-							$feedbacksgeneric[1] = $material;
-						}
-					}
-					if ((count($ifb->flow_mat) > 0))
-					{
-						foreach ($ifb->flow_mat as $fmat)
-						{
-							if (count($fmat->material))
-							{
-								foreach ($fmat->material as $material)
-								{
-									$feedbacksgeneric[1] = $material;
-								}
-							}
-						}
-					}
-				}
-				else if (strcmp($ifb->getIdent(), "response_onenotcorrect") == 0)
-				{
-					// found a feedback for the identifier
-					if (count($ifb->material))
-					{
-						foreach ($ifb->material as $material)
-						{
-							$feedbacksgeneric[0] = $material;
-						}
-					}
-					if ((count($ifb->flow_mat) > 0))
-					{
-						foreach ($ifb->flow_mat as $fmat)
-						{
-							if (count($fmat->material))
-							{
-								foreach ($fmat->material as $material)
-								{
-									$feedbacksgeneric[0] = $material;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 
-		// set question properties
-		$this->addGeneralMetadata($item);
 		$this->object->setTitle($item->getTitle());
-		$this->object->setNrOfTries($item->getMaxattempts());
 		$this->object->setComment($item->getComment());
 		$this->object->setAuthor($item->getAuthor());
 		$this->object->setOwner($ilUser->getId());
 		$this->object->setQuestion($this->object->QTIMaterialToString($item->getQuestiontext()));
 		$this->object->setObjId($questionpool_id);
-		$this->object->setEstimatedWorkingTime($duration["h"], $duration["m"], $duration["s"]);
-		$this->object->setPoints($item->getMetadataEntry("POINTS"));
-		
-		//Question specific fields
+		$this->object->setEstimatedWorkingTime($duration["h"], $duration["m"], $duration["s"]);		
+		$this->object->setPoints($item->getMetadataEntry("points"));
 		$this->object->setOptionString($item->getMetadataEntry("option_string"));
 		$this->object->setSampleSolution($item->getMetadataEntry("sample_solution"));
 		$this->object->setSmilesSolution($item->getMetadataEntry("smiles_solution"));
-		//End Question specific fields
 		
-		// additional content editing mode information
-		$this->object->setAdditionalContentEditingMode(
-			$this->fetchAdditionalContentEditingModeInformation($item)
-		);
-
-		// first save the question to get a new question id
-		$this->object->saveToDb();
-
-
-		// convert the generic feedback
-		foreach ($feedbacksgeneric as $correctness => $material)
-		{
-			$m = $this->object->QTIMaterialToString($material);
-			$feedbacksgeneric[$correctness] = $m;
-		}
+		$this->object->saveToDb('', false);
 
 		// handle the import of media objects in XHTML code
 		$questiontext = $this->object->getQuestion();
@@ -136,45 +61,91 @@ class assJSMEQuestionImport extends assQuestionImport
 			{
 				if ($tst_id > 0)
 				{
-					$importfile = $this->getTstImportArchivDirectory() . '/' . $mob["uri"];
+					include_once "./Modules/Test/classes/class.ilObjTest.php";
+					$importfile = ilObjTest::_getImportDirectory() . '/' . $mob["uri"];
 				}
 				else
 				{
-					$importfile = $this->getQplImportArchivDirectory() . '/' . $mob["uri"];
+					include_once "./Modules/TestQuestionPool/classes/class.ilObjQuestionPool.php";
+					$importfile = ilObjQuestionPool::_getImportDirectory() . '/' . $mob["uri"];
 				}
-				global $ilLog;
-				$ilLog->write($importfile);
-
 				$media_object =& ilObjMediaObject::_saveTempFileAsMediaObject(basename($importfile), $importfile, FALSE);
 				ilObjMediaObject::_saveUsage($media_object->getId(), "qpl:html", $this->object->getId());
-
-				// images in question text
-				$questiontext = str_replace("src=\"" . $mob["mob"] . "\"", "src=\"" . "il_" . IL_INST_ID . "_mob_" . $media_object->getId() . "\"", $questiontext);
-
-				// images in feedback
-				foreach ($feedbacksgeneric as $correctness => $material)
+				$questiontext = str_replace("src=\"" . $mob["mob"] . "\"", "src=\"" . "il_" . IL_INST_ID . "_mob_" . $media_object->getId() . "\"", $questiontext);			
+			}
+		}
+		$this->object->setQuestion(ilRTE::_replaceMediaObjectImageSrc($questiontext, 1));
+		// feedback
+		$feedbacksgeneric = array();		
+		foreach ($item->itemfeedback as $ifb)
+		{
+			if (strcmp($ifb->getIdent(), "response_allcorrect") == 0)
+			{
+				// found a feedback for the identifier
+				if (count($ifb->material))
 				{
-					$feedbacksgeneric[$correctness] = str_replace("src=\"" . $mob["mob"] . "\"", "src=\"" . "il_" . IL_INST_ID . "_mob_" . $media_object->getId() . "\"", $material);
+					foreach ($ifb->material as $material)
+					{
+						$feedbacksgeneric[1] = $material;
+					}
+				}
+				if ((count($ifb->flow_mat) > 0))
+				{
+					foreach ($ifb->flow_mat as $fmat)
+					{
+						if (count($fmat->material))
+						{
+							foreach ($fmat->material as $material)
+							{
+								$feedbacksgeneric[1] = $material;
+							}
+						}
+					}
+				}
+			} 
+			else if (strcmp($ifb->getIdent(), "response_onenotcorrect") == 0)
+			{
+				// found a feedback for the identifier
+				if (count($ifb->material))
+				{
+					foreach ($ifb->material as $material)
+					{
+						$feedbacksgeneric[0] = $material;
+					}
+				}
+				if ((count($ifb->flow_mat) > 0))
+				{
+					foreach ($ifb->flow_mat as $fmat)
+					{
+						if (count($fmat->material))
+						{
+							foreach ($fmat->material as $material)
+							{
+								$feedbacksgeneric[0] = $material;
+							}
+						}
+					}
 				}
 			}
 		}
-
-		$this->object->setQuestion(ilRTE::_replaceMediaObjectImageSrc($questiontext, 1));
+			
+		// genericFeedback
+		foreach ($feedbacksgeneric as $correctness => $material)
+		{			
+			$m = $this->object->QTIMaterialToString($material);
+			$feedbacksgeneric[$correctness] = $m;			
+		}
 		foreach ($feedbacksgeneric as $correctness => $material)
 		{
-			$this->object->feedbackOBJ->importGenericFeedback(
-				$this->object->getId(), $correctness, ilRTE::_replaceMediaObjectImageSrc($material, 1)
-			);
-		}
-
-		// Now save the question again
+			$this->object->saveFeedbackGeneric($correctness, ilRTE::_replaceMediaObjectImageSrc($material, 1));
+		}				
+			
 		$this->object->saveToDb();
 
-		// import mapping for tests
 		if ($tst_id > 0)
 		{
 			$q_1_id = $this->object->getId();
-			$question_id = $this->object->duplicate(true, null, null, null, $tst_id);
+			$question_id = $this->object->duplicate(true);
 			$tst_object->questions[$question_counter++] = $question_id;
 			$import_mapping[$item->getIdent()] = array("pool" => $q_1_id, "test" => $question_id);
 		}

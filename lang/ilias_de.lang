@@ -4,6 +4,3 @@ save#:#Speichern
 errorInput#:#Eingaben unvollständig. Felder mit * dürfen nicht leer bleiben.
 optionString#:#Optionen
 sampleSolution#:#Musterlösung
-label_value1#:#Roheingabe
-label_value2#:#SMILES
-

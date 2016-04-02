@@ -1,6 +1,6 @@
 <#1>
 <?php
-	// Add JSME Question Type
+	// Trage JSME-Frage als neuen Fragetyp ein, wenn es diesen noch nicht gibt
 	$res = $ilDB->queryF("SELECT * FROM qpl_qst_type WHERE type_tag = %s",
 		array('text'),
 		array('assJSMEQuestion')
@@ -19,7 +19,7 @@
 ?>
 <#2>
 <?php
-	//Define JSME data
+	// speichere angegebenes hintergrundbild
 	$fields = array(
 			'question_fi'	=> array('type' => 'integer', 'length' => 4, 'notnull' => true ),
 			'option_string' => array('type' => 'text', 'length' => 200, 'fixed' => false, 'notnull' => false ),
@@ -30,7 +30,6 @@
 ?>
 <#3>
 <?php
-	//Add SMILES to table for autoevaluation
     if(!$ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'smiles'))
     {
         $ilDB->addTableColumn('il_qpl_qst_jsme_data', 'smiles', array(

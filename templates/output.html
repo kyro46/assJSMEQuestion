@@ -3,12 +3,13 @@
 <div id="jsme_container" onmouseup="getJmeFile();" onmousemove="color();"></div>
 <form method="POST" action="" id="answerForm">
 	<input type="hidden" id="answerString" name="sampleSolution" value="{MOLECULE}" />
-	<input type="hidden" id="smilesString" name="smilesSolution"  value="{SMILES}"/>
+	<input type="hidden" id="smilesString" name="smilesSolution" value="{SMILES}"/>
 </form>
+
 
 <textarea rows="10" cols="50" id="answer" style="display:none;">{MOLECULE}</textarea>
 <label id="smileslabel">{SMILES}</label>
-
+<!--<textarea rows="10" cols="50" id="answer"></textarea>-->
 <script>
     //this function will be called after the JavaScriptApplet code has been loaded.
     function jsmeOnLoad() {
@@ -16,21 +17,21 @@
         jsmeApplet.readMolecule("{MOLECULE}");
         jsmeApplet.options("{OPTIONS}");
         jsmeApplet.setHelpURL("");
-        color();
    }
    
+   // hide help-button in about-window 
    function findButtonbyTextContent() {
-		// hide help-button in about-window			
 		var buttons = document.getElementsByTagName('button');		
 		for (var i=0; i<buttons.length; i++) {
 			if (buttons[i].firstChild.nodeValue == 'Help')
 				buttons[i].style = "display:none";
 		}  	
-	
+		color();	
 	}
 	
+	//red color for P as yellow is poorly visible on white background for some people
 	function color(){
-		//red color for P as yellow is poorly visible on white background for some people
+	
 	   var text = document.getElementsByTagName("text");
 		for (i=0; i<text.length; i++){
 			if ( text[i].getAttribute("fill") == "rgb(255,200,0)" ) {
@@ -40,17 +41,17 @@
 	}   
    
 	function getJmeFile() {	
-		findButtonbyTextContent();	
+		findButtonbyTextContent();
 		color();
 		var jme = jsmeApplet.jmeFile();
 		var smiles = jsmeApplet.smiles();
-				
+		
 		document.getElementById("answerString").value = jme;
 		document.getElementById("smilesString").value = smiles;
 		
 		document.getElementById("answer").placeholder = jme;
 		document.getElementById("smileslabel").innerHTML = smiles;
-
+		
 		document.getElementById("answerForm").submit();				
 	}
 </script>

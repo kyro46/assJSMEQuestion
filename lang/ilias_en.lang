@@ -1,8 +1,7 @@
-questionType#:#JSMEQuestion
+questionType#:#JSME-Question
 points#:#Points
 save#:#Save
 errorInput#:#Invalid input
 optionString#:#Options
 sampleSolution#:#Sample Solution
-label_value1#:#Raw input
-label_value2#:#SMILES
+
