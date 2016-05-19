@@ -71,7 +71,7 @@ class assJSMEQuestion extends assQuestion
 	function isComplete()
 	{
 		//Add SMILES-String as requirement
-		if ( (strlen($this->getTitle())) and ($this->author) and ($this->question) and ($this->getMaximumPoints() >= 0) )		
+		if ( (strlen($this->getTitle())) and ($this->author) and ($this->question) and ($this->getMaximumPoints() > 0) )		
 		{
 			return true;
 		}
