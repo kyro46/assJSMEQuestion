@@ -111,11 +111,12 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		// points
 		$plugin = $this->object->getPlugin();
 		$points = new ilNumberInputGUI($plugin->txt("points"), "points");
+		$points->setSize(3);
+		$points->setMinValue(0);
+		$points->allowDecimals(1);
+		$points->setRequired(true);
 		$points->setValue($this->object->getPoints());
-		$points->setRequired(TRUE);
-		$points->setSize(10);
-		$points->setMinValue(0.0);
-		$form->addItem($points);	
+		$form->addItem($points);
 		
 		// optionString for the JSME-Applet
 		include_once("./Services/Form/classes/class.ilTextInputGUI.php");
@@ -152,7 +153,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
             // write the basic data
 			$this->writeQuestionGenericPostData();
 
-			$this->object->setPoints($_POST["points"]);				
+			$this->object->setPoints(str_replace( ",", ".", $_POST["points"] ));				
 			$this->object->setOptionString($_POST["optionString"]);
 			$this->object->setSampleSolution($_POST["sampleSolution"]);
 			$this->object->setSmilesSolution($_POST["smilesSolution"]);
