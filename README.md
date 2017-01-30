@@ -1,7 +1,7 @@
 # assJSMEQuestion
-JSME-Questiontypeplugin for ILIAS 5.1.x
+JSME-Questiontypeplugin for ILIAS 5.2.x
 
-For ILIAS 4.3, 4.4 and 5.0 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases)
+For ILIAS 4.3, 4.4, 5.0 and 5.1 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases)
 
 ### Questiontype that allows the creation of molecules ###
 
