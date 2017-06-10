@@ -8,7 +8,7 @@ For ILIAS 4.3, 4.4, 5.0 and 5.1 see the [**Releases**](https://github.com/kyro46
 Using the free JSME-Editor, the questiontype allows to create molecules with an easy to use interface.
 
 [**JSME-Editor Homepage**](http://peter-ertl.com/jsme/)
-[**JSME-Editor Demo**](http://peter-ertl.com/jsme/JSME_2015-12-06/JSME.html)
+[**JSME-Editor Demo**](http://peter-ertl.com/jsme/JSME_2017-02-26/JSME.html)
 
 ### Usage ###
 
@@ -30,4 +30,4 @@ Activate manual scoring for better control.
 
 ### Credits ###
 * Development of the plugin-draft for ILIAS 4.4 by Yves Annanias, University Halle, 2014
-* Further development by Christoph Jobst, University Halle, 2014/2015/2016
+* Further development by Christoph Jobst, University Halle, 2014/2015/2016/2017

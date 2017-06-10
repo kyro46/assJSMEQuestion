@@ -65,3 +65,8 @@
     	$ilDB->query('ALTER TABLE il_qpl_qst_jsme_data MODIFY smiles VARCHAR(1000)');
     }
 ?>
+<#6>
+<?php
+	//Set default values for existing JSME-Questions, to keep them "exam-safe"
+	$ilDB->manipulate('UPDATE il_qpl_qst_jsme_data SET option_string = "nosearchinchiKey nopaste" WHERE option_string = ""');
+?>
