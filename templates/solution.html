@@ -1,8 +1,13 @@
 <p>{QUESTIONTEXT}</p>
 <!-- style="pointer-events:none;" -->
 <div id="jsme_containerSolution{ID}" style="pointer-events:none;"></div>
-SMILES: {SMILES}
 
+<br/>
+<img id="solution" src='@{SVG}'  onerror="this.src = 'data:image/svg+xml,' + this.src.substring(this.src.indexOf('@') + 1);" alt="Image Error" />
+<br/><br/>
+SMILES:
+<br/>
+{SMILES}
 <script>
     //this function will be called after the JavaScriptApplet code has been loaded.
    il.Util.addOnLoad(

@@ -19,6 +19,8 @@ class assJSMEQuestion extends assQuestion
 	var $sampleSolution = "";
 	// for manual correction
 	var $smilesSolution = "";
+	//SVG
+	var $svg = "";
 	
 	/**
 	* assJSMEQuestion constructor
@@ -92,6 +94,10 @@ class assJSMEQuestion extends assQuestion
 	function setSmilesSolution($smilesSolution){
 		$this->smilesSolution = $smilesSolution;
 	}
+
+	function setSvg($svg){
+		$this->svg = $svg;
+	}
 	
 	function getOptionString()
 	{
@@ -104,6 +110,10 @@ class assJSMEQuestion extends assQuestion
 
 	function getSmilesSolution(){
 		return $this->smilesSolution;
+	}
+
+	function getSvg(){
+		return $this->svg;
 	}
 
 	/**
@@ -123,13 +133,14 @@ class assJSMEQuestion extends assQuestion
 			array("integer"),
 			array($this->getId())
 		);
-		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution, smiles) VALUES (%s, %s, %s, %s)", 
-				array("integer", "text", "text", "text"),
+		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution, smiles, svg) VALUES (%s, %s, %s, %s, %s)", 
+				array("integer", "text", "text", "text", "clob"),
 				array(
 					$this->getId(),
 					$this->optionString,
 					$this->sampleSolution,
-					$this->smilesSolution
+					$this->smilesSolution,
+					$this->svg
 				)
 		);
 			
@@ -165,13 +176,14 @@ class assJSMEQuestion extends assQuestion
 		$this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"], 1));
 		$this->setEstimatedWorkingTime(substr($data["working_time"], 0, 2), substr($data["working_time"], 3, 2), substr($data["working_time"], 6, 2));
 		
-		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
+		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles, svg FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
 		if($ilDB->numRows($resultCheck) == 1)
 		{
 			$data = $ilDB->fetchAssoc($resultCheck);
 			$this->setOptionString($data["option_string"]);
 			$this->setSampleSolution($data["solution"]);
-			$this->setSmilesSolution($data["smiles"]);		
+			$this->setSmilesSolution($data["smiles"]);	
+			$this->setSvg($data["svg"]);
 		}
 		
 		try
@@ -373,7 +385,7 @@ class assJSMEQuestion extends assQuestion
 		);
 
 		$entered_values = false;		
-		$value1 = $_POST['sampleSolution'];
+		$value1 = $_POST['sampleSolution'] . "++++SVG++++" . base64_encode($_POST['svgSolution']);
 		$value2 = $_POST['smilesSolution'];
 		
 		if (strlen($value1) > 0)
