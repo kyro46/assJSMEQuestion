@@ -289,22 +289,26 @@ class assJSMEQuestionGUI extends assQuestionGUI
 			$user_solution = array();
 		}						
 
+		$value1_temp_array = explode('++++SVG++++', $user_solution[0]["value1"]);
+		$userSampleSolution = $value1_temp_array[0];
+		$userSvg = base64_decode($value1_temp_array[1]);
+		$userSvg = substr_replace($userSvg, " The PDF engine can't handle inline SVG." . substr($userSvg, -6), -6);
+		
+		$sampleSvg = $this->object->getSvg();
+		$sampleSvg = substr_replace($sampleSvg, " The PDF engine can't handle inline SVG." . substr($sampleSvg, -6), -6);
+		
 		// generate the question output
 		$solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html",TRUE, TRUE, "Modules/TestQuestionPool");
 				
 		if ($show_correct_solution)
 		{			
 			//$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");		
-			$template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");
+			$template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $sampleSvg, "solution.html");
 			$template->setVariable("ID", 'S'.$this->object->getId());
 			return $template->get();			
 			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden ;)
 		}				
-		
-		$value1_temp_array = explode('++++SVG++++', $user_solution[0]["value1"]);
-		$userSampleSolution = $value1_temp_array[0];
-		$userSvg = base64_decode($value1_temp_array[1]);
-		
+
 		//$templateUser = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $user_solution[0]["value2"], $userSvg, "solution.html");	
 		$templateUser = $this->getQuestionOutput($this->object->getQuestion(), "", "", $user_solution[0]["value2"], $userSvg, "solution.html");
 		$templateUser->setVariable("ID", 'U'.$this->object->getId());	
@@ -313,7 +317,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		if ($show_manual_scoring && strlen($this->object->getSampleSolution()) > 0 )
 		{
 			//$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");
-			$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), "", "", $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");
+			$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), "", "", $this->object->getSmilesSolution(), $sampleSvg, "solution.html");
 			$templateSample->setVariable("ID", 'S'.$this->object->getId());
 			$questionoutput .= "<br>" . $templateSample->get();
 		}
