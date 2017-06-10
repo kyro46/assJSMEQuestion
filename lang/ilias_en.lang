@@ -6,3 +6,4 @@ optionString#:#Options
 sampleSolution#:#Sample Solution
 label_value1#:#Raw input
 label_value2#:#SMILES
+options_hint#:# Options are separated by space. A list of options can be found <a target="_blank" href="http://peter-ertl.com/jsme/JSME_2017-02-26/doc.html#JSME_API">HERE</a>, in section "JSME Options".<br/>The default options "nosearchinchiKey nopaste" deactivate ways to access the file system and a websearch. 

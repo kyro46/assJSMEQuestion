@@ -15,7 +15,7 @@ class assJSMEQuestion extends assQuestion
 	var $plugin = null;
 	
 	// options for jsme-applet
-	var $optionString = "";
+	var $optionString = "nosearchinchiKey nopaste ";
 	var $sampleSolution = "";
 	// for manual correction
 	var $smilesSolution = "";

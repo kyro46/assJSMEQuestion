@@ -122,6 +122,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		include_once("./Services/Form/classes/class.ilTextInputGUI.php");
 		$optionString = new ilTextInputGUI($plugin->txt("optionString"), "optionString");		
 		$optionString->setValue($this->object->getOptionString());				
+		$optionString->setInfo($plugin->txt("options_hint"));
 		$form->addItem($optionString);
 		
 		// JSME-Applet for sampleSolution
