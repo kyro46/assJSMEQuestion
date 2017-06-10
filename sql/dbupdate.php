@@ -41,3 +41,27 @@
         );
     }
 ?>
+<#4>
+<?php
+	//Add SVG to table for presentation in PDF and for manual correction
+    if(!$ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'svg'))
+    {
+        $ilDB->addTableColumn('il_qpl_qst_jsme_data', 'svg', array(
+                'type' => 'clob',
+                'notnull' => false,
+            )
+        );
+    }
+?>
+<#5>
+<?php
+	//Enlarge storage for options and smilies
+    if($ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'option_string'))
+    {
+    	$ilDB->query('ALTER TABLE il_qpl_qst_jsme_data MODIFY option_string VARCHAR(1000)');
+    }
+    if($ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'smiles'))
+    {
+    	$ilDB->query('ALTER TABLE il_qpl_qst_jsme_data MODIFY smiles VARCHAR(1000)');
+    }
+?>
