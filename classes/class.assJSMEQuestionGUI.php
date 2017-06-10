@@ -290,13 +290,23 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		}						
 
 		$value1_temp_array = explode('++++SVG++++', $user_solution[0]["value1"]);
-		$userSampleSolution = $value1_temp_array[0];
-		$userSvg = base64_decode($value1_temp_array[1]);
-		$userSvg = substr_replace($userSvg, " The PDF engine can't handle inline SVG." . substr($userSvg, -6), -6);
 		
-		$sampleSvg = $this->object->getSvg();
-		$sampleSvg = substr_replace($sampleSvg, " The PDF engine can't handle inline SVG." . substr($sampleSvg, -6), -6);
-		
+		if (count($value1_temp_array) === 1) {
+			$userSampleSolution = $value1_temp_array[0];
+			$userSvg = '';
+		} else {
+			$userSampleSolution = $value1_temp_array[0];
+			$userSvg = base64_decode($value1_temp_array[1]);
+			$userSvg = substr_replace($userSvg, " The PDF engine can't handle inline SVG." . substr($userSvg, -6), -6);
+		}
+
+		if($this->object->getSvg()== '' || $this->object->getSvg()== null) {
+			$sampleSvg = '';
+		} else {
+			$sampleSvg = $this->object->getSvg();
+			$sampleSvg = substr_replace($sampleSvg, " The PDF engine can't handle inline SVG." . substr($sampleSvg, -6), -6);
+		}
+
 		// generate the question output
 		$solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html",TRUE, TRUE, "Modules/TestQuestionPool");
 				
