@@ -456,7 +456,7 @@ class assJSMEQuestion extends assQuestion
 	*/
 	function getAdditionalTableName()
 	{
-		return "";
+		return "il_qpl_qst_jsme_data";
 	}
 	
 	/**
