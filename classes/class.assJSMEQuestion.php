@@ -385,23 +385,16 @@ class assJSMEQuestion extends assQuestion
 		);
 
 		$entered_values = false;		
-		$value1 = $_POST['sampleSolution'] . "++++SVG++++" . base64_encode($_POST['svgSolution']);
-		$value2 = $_POST['smilesSolution'];
+		$value1_solution = $_POST['sampleSolution'];
+		$value2_smiles = $_POST['smilesSolution'];
+		$value3_svg = base64_encode($_POST['svgSolution']);
+        $value4_InChI = null;        
 		
-		if (strlen($value1) > 0)
-		{			
-			$entered_values = true;
-			$next_id = $ilDB->nextId("tst_solutions");
-			$ilDB->insert("tst_solutions", array(
-				"solution_id" => array("integer", $next_id),
-				"active_fi" => array("integer", $active_id),
-				"question_fi" => array("integer", $this->getId()),
-				//"points" => array("float", $this->calculateReachedPoints($active_id, $pass)),
-				"value1" => array("clob", $value1),
-				"value2" => array("clob", $value2),
-				"pass" => array("integer", $pass),
-				"tstamp" => array("integer", time())
-			));					
+        if (strlen($value1_solution) > 0)
+		{	
+		    $entered_values = true;
+		    $this->saveCurrentSolution($active_id, $pass, $value1_solution, $value2_smiles, $authorized);
+		    $this->saveCurrentSolution($active_id, $pass, $value3_svg, $value4_InChI, $authorized); 
 		}
 		
 		if ($entered_values)
