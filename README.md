@@ -1,5 +1,5 @@
 # assJSMEQuestion
-JSME-Questiontypeplugin for ILIAS 5.2.x and 5.3.beta
+JSME-Questiontypeplugin for ILIAS 5.2.x and 5.3.x
 
 For ILIAS 4.3, 4.4, 5.0 and 5.1 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases)
 
@@ -28,7 +28,7 @@ Activate manual scoring for better control.
 
 ### Known Issues ###
 
-* Fixed in ILIAS 5.3 - PDF-generation for the "Test Archive File" does not show the Javascriptapplet, so the question/solution is not shown.
+* ILIAS 5.3 - PDF-generation for the "Test Archive File" is still hardwired to TCPDF which is unable to render the molecule, so the question/solution is not shown. This plugin cannot fix this.
 
 ### Credits ###
 * Development of the plugin-draft for ILIAS 4.4 by Yves Annanias, University Halle, 2014
