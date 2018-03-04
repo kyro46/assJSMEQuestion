@@ -315,12 +315,12 @@ class assJSMEQuestionGUI extends assQuestionGUI
 			$template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $sampleSvg, "solution.html");
 			$template->setVariable("ID", 'S'.$this->object->getId());
 			return $template->get();			
-			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden ;)
-		}				
+			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden
+		}
 
-		//$templateUser = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $user_solution[0]["value2"], $userSvg, "solution.html");	
+		//$templateUser = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $user_solution[0]["value2"], $userSvg, "solution.html");
 		$templateUser = $this->getQuestionOutput($this->object->getQuestion(), "", "", $user_solution[0]["value2"], $userSvg, "solution.html");
-		$templateUser->setVariable("ID", 'U'.$this->object->getId());	
+		$templateUser->setVariable("ID", 'U'.$this->object->getId());
 		$questionoutput = $templateUser->get();
 		
 		if ($show_manual_scoring && strlen($this->object->getSampleSolution()) > 0 )

@@ -1,31 +1,8 @@
 <p>{QUESTIONTEXT}</p>
 <!-- style="pointer-events:none;" -->
-<div id="jsme_containerSolution{ID}" style="pointer-events:none;"></div>
-
 <br/>
 {SVG}
 <br/><br/>
 SMILES:
 <br/>
 {SMILES}
-<script>
-    //this function will be called after the JavaScriptApplet code has been loaded.
-   il.Util.addOnLoad(
-		function(){
-			jsmeAppletSolution = new JSApplet.JSME("jsme_containerSolution{ID}", "500px", "500px");
-			jsmeAppletSolution.readMolecule("{MOLECULE}");
-			jsmeAppletSolution.options("{OPTIONS}");
-			jsmeAppletSolution.setHelpURL("");
-			color();
-		}
-   ); 
-   
-   function color(){
-	   var text = document.getElementsByTagName("text");
-		for (i=0; i<text.length; i++){
-			if ( text[i].getAttribute("fill") == "rgb(255,200,0)" ) {
-				text[i].setAttribute("fill", "rgb(205,24,25)");
-			}  		
-		}
-	}   
-</script>
