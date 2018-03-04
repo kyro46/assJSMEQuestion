@@ -293,13 +293,17 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		$userSampleSolution = $user_solution[0]["value1"];
 		$userSvg = base64_decode($user_solution[1]["value1"]);
 
-		$userSvg = substr_replace($userSvg, " The PDF engine can't handle inline SVG." . substr($userSvg, -6), -6);
+		if($userSvg== '' || $userSvg== null) {
+		    $userSvg = $this->object->getPlugin()->txt("old_plugin_solution");
+		} else {
+		    $userSvg = substr_replace($userSvg, "The PDF engine can't handle inline SVG." . substr($userSvg, -6), -6);
+		}
 
 		if($this->object->getSvg()== '' || $this->object->getSvg()== null) {
-			$sampleSvg = '';
+		    $sampleSvg = $this->object->getPlugin()->txt("old_plugin_question");
 		} else {
 			$sampleSvg = $this->object->getSvg();
-			$sampleSvg = substr_replace($sampleSvg, " The PDF engine can't handle inline SVG." . substr($sampleSvg, -6), -6);
+			$sampleSvg = substr_replace($sampleSvg, "The PDF engine can't handle inline SVG." . substr($sampleSvg, -6), -6);
 		}
 
 		// generate the question output
