@@ -7,6 +7,7 @@ include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
  * for Question-Type-Plugin.
  *
  * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+ * @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
  * @version	$Id: $
  * @ingroup 	ModulesTestQuestionPool
  *

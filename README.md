@@ -32,4 +32,4 @@ Activate manual scoring for better control.
 
 ### Credits ###
 * Development of the plugin-draft for ILIAS 4.4 by Yves Annanias, University Halle, 2014
-* Further development by Christoph Jobst, University Halle, 2014/2015/2016/2017
+* Further development by Christoph Jobst, University Halle and Leipzig

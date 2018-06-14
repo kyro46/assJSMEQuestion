@@ -6,6 +6,7 @@ include_once "./Modules/TestQuestionPool/classes/export/qti12/class.assQuestionE
 * assJSMEQuestionExport export
 *
 * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+* @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
 * @version	$Id:  $
 * @ingroup ModulesTestQuestionPool
 */
