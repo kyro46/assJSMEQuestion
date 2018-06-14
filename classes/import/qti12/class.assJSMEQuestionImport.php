@@ -105,7 +105,11 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->setPoints($item->getMetadataEntry("POINTS"));
 		
 		//Question specific fields
-		$this->object->setOptionString($item->getMetadataEntry("option_string"));
+		if ($item->getMetadataEntry("option_string") !== ''){
+			$this->object->setOptionString($item->getMetadataEntry("option_string"));
+		} else {
+			$this->object->setOptionString('nosearchinchiKey nopaste');
+		}
 		$this->object->setSampleSolution($item->getMetadataEntry("sample_solution"));
 		$this->object->setSmilesSolution($item->getMetadataEntry("smiles_solution"));
 		$this->object->setSvg(base64_decode($item->getMetadataEntry("svg")));
