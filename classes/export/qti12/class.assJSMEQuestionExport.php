@@ -6,6 +6,7 @@ include_once "./Modules/TestQuestionPool/classes/export/qti12/class.assQuestionE
 * assJSMEQuestionExport export
 *
 * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+* @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
 * @version	$Id:  $
 * @ingroup ModulesTestQuestionPool
 */
@@ -72,6 +73,11 @@ class assJSMEQuestionExport extends assQuestionExport
 		$a_xml_writer->xmlStartTag("qtimetadatafield");
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "smiles_solution");
 		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getSmilesSolution());
+		$a_xml_writer->xmlEndTag("qtimetadatafield");
+		
+		$a_xml_writer->xmlStartTag("qtimetadatafield");
+		$a_xml_writer->xmlElement("fieldlabel", NULL, "svg");
+		$a_xml_writer->xmlElement("fieldentry", NULL, base64_encode($this->object->getSvg()));
 		$a_xml_writer->xmlEndTag("qtimetadatafield");
 		//End Question specific fields
 		

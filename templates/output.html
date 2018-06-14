@@ -4,11 +4,12 @@
 <form method="POST" action="" id="answerForm">
 	<input type="hidden" id="answerString" name="sampleSolution" value="{MOLECULE}" />
 	<input type="hidden" id="smilesString" name="smilesSolution"  value="{SMILES}"/>
+	<input type="hidden" id="svgString" name="svgSolution"  value='{SVG}'/>
 </form>
 
 <textarea rows="10" cols="50" id="answer" style="display:none;">{MOLECULE}</textarea>
 <label id="smileslabel">{SMILES}</label>
-
+<textarea rows="10" cols="50" id="svg" style="display:none;">{SVG}</textarea>
 <script>
     //this function will be called after the JavaScriptApplet code has been loaded.
     function jsmeOnLoad() {
@@ -44,12 +45,16 @@
 		color();
 		var jme = jsmeApplet.jmeFile();
 		var smiles = jsmeApplet.smiles();
+		var svg = jsmeApplet.getMolecularAreaGraphicsString();
 				
 		document.getElementById("answerString").value = jme;
 		document.getElementById("smilesString").value = smiles;
+		document.getElementById("svgString").value = svg;
+
 		
 		document.getElementById("answer").placeholder = jme;
 		document.getElementById("smileslabel").innerHTML = smiles;
+		document.getElementById("svglabel").placeholder = svg;
 
 		document.getElementById("answerForm").submit();				
 	}

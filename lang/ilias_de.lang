@@ -6,4 +6,6 @@ optionString#:#Optionen
 sampleSolution#:#Musterlösung
 label_value1#:#Roheingabe
 label_value2#:#SMILES
-
+options_hint#:# Optionen sind mit Leerzeichen getrennt einzutragen. Eine Liste der Optionen ist <a target="_blank" href="http://peter-ertl.com/jsme/JSME_2017-02-26/doc.html#JSME_API">HIER</a>, in der Sektion "JSME Options" zu finden.<br/>Die Voreinstellung "nosearchinchiKey nopaste" deaktivert mögliche Zugänge zum Dateisystem und zu einer Websuche. 
+old_plugin_solution#:#Lösung mit alter JSME-Version erstellt (kein SVG).
+old_plugin_question#:#Frage mit alter JSME-Version erstellt (kein SVG).

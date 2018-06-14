@@ -1,3 +1,165 @@
+JSME-2017-02-26
+	- improved URL for searching InChI Key (google verbatim search)
+	- bug fix: popup menu positions when the GUI is scaled
+	- bug fix: getMolecularAreaScale() generated an infinite loop
+	- bug fix: no error were reported when the V3000 parser fails
+	- bug fix: setAtomMolecularAreaFontSize() was not working
+	- bug fix: set or unset antialising did not update the drawings
+	- improved template example page
+
+JSME-2017-02-20
+	- bug fix: chiral flag was not saved in the undo state
+	- bug fix: ChemicalFormatDetector trimmed MOL first line if it is empty
+	- improved template example page
+
+JSME-2017-02-08
+	- bug fix: SDF buffer navigation messages were not shown
+	- HOME and END keys can be used to navigate the SDF buffer in addition to page up and page down keys
+
+JSME-2017-02-06
+	- bug fix: structure change event recorded after setting the chiral flag
+	- bug fix: NEW button shown as disabled after structure change
+	- new feature: when NEW button is on, the pasted or dropped structure is added to the molecular drawing area
+
+JSME-2017-01-22
+	- bug fix:  in depict mode, DnD arrow size does not vary with zoom level
+	- DnD arrow in depict mode is smaller
+	- new event types for reading  SMILES, SMIRKS, RXN, JME string
+	- new event field: origin (GUI, INIT, DROP, or API)
+	- new API method:readGenericMolecularInput()
+	- import MOL in V3000 format accepted (extended stereo collections are ignored)
+	- exported SVG contains an embedded MOL in V3000 format, this SVG can be pasted/imported back in JSME
+	- bug fix: depict mode automatic scaling and resizing
+	- bug fix: zooming in and out for reactions
+	- new internal class: ChemicalFormatDetector
+	- JME internal code cleanup
+
+JSME-2016-12-06
+	- new API methods: getMolecularAreaScale(), setMolecularAreaScale(), getMenuScale(), setMenuScale()
+	- depict mode: structure can be moved around
+	- multiple button after setting R option : GUI bug fixed
+	
+JSME-2016-11-13
+	- improved documentation (options useoclidcode, toggle, InchiResult)
+	- Search InChIKey can be customized by using a custom base URL or a custom callback function
+	- Search InChIKey menu entry renamed
+	- Inchi export disabled for IE < 9
+	
+JSME-2016-11-05
+	- option parser code rewrite
+	- bug fix Export SVG for IE < 9
+
+JSME-2016-11-01
+	- Export SVG for molecules using the OpenChemLib SVG depictor
+
+JSME-2016-10-30
+	- bug fix: parsing of chemical input for IE
+	- bug fix: stereo cumulenes smiles generation
+	- bug fix: EZ stereo bond in rings enabled (smiles generation)
+	- Export InChI, InChiKey and auxinfo
+	- Search google with InChiKey
+
+JSME-2016-10-19
+	- bug fix: getMolecularAreaGraphicsString
+	- bug fix: slow down of FireFox SVG display
+
+JSME-2016-10-17
+	- bug fix: Cursor does not become a text edit cursor over SVG text
+	- the right border uses a separate graphics, which fixes several bugs
+	- bug fix: readMolfile sends JS event after repaint() of the applet
+
+JSME-2016-10-09
+	- useOclIDCode new option: preliminary implementation
+
+JSME-2016-10-06
+	- delete hydrogens popup  menu entry
+	- bug fix: removehs fixed
+	- bug fix: infinite loop when setAfterStructureModifiedCallback uses getMolecularAreaGraphicsString()
+
+JSME-2016-10-02
+	- clipboard window improved for long lines text
+
+JSME-2016-09-25
+	- display sp carbon in cumulene bond
+
+JSME-2016-09-18
+	- bug fix: H+, H-
+	- undo shows empty state
+	- depict bug fix
+	- internal change for event reporting
+	
+JSME-2016-09-11
+	- bug fix: cumulene and autoez option
+	- getMolecularAreaGraphicsString function refreshes the drawing before yielding the SVG. Also, it does not show the touched atom or bond.
+
+JSME-2016-09-05
+	- small bug fixesm reading mutipart mol
+	- readMolfile sends JS event after repaint() of the applet
+
+JSME-2016-09-04
+	- small bug fixes
+
+JSME-2016-08-21
+	- R number can be changed by selecting the R atom and typing a number on the keyboard
+	- the */- button allows changing charge of metals with only two major oxidation states
+	- X atom charge parsing bug fix for Ca2+
+	- New keyboard shortcut for changing atomic charge '+' (works only for the Java applet)
+	
+JSME-2016-08-01
+	- bug fix add new part was not working correctly if the pasted structure is multipart
+    - autoez bug fix , autoez is on by default
+    
+JSME-2016-06-19
+	- new options: showdraganddropsymbolindepictmode and noshowdraganddropsymbolindepictmode
+	- new options: addnewpart and noaddnewpart
+	- bug fix add new part was not supported for JME string input
+	- split and merge new behavior
+	- mutipart option is on by default
+
+JSME-2016-05-16
+	- bug fix: depict was not scaled anymore
+	- MDL chiral flag reading was generating an exception if no digit character were present
+	- New JSME initialization: <param name="smiles" value="c1ncncn1">
+
+
+JSME-2016-04-27
+	- disable SVG text selection with global CSS
+	- Bug fix: bond addition with keyboard on selected atom
+	- atom mapping option in the context popup menu is shown only in reaction or number or autonumber mode
+
+JSME-2016-04-19
+	- atom mapping option in the context popup menu is shown only in reaction mode
+	- bug fix
+	- Setting the chiral flag shows a message in the info area
+
+JSME-2016-04-17
+   - dialog box to set atom map available with the context menu
+   - autonumbering of atom maps of a molecule using the context menu
+   - read and write chiral flag for both V2000 and V3000
+   - set MDL chiral flag with the context menu
+   - in multipart, activate closest fragment by a mouse click
+   - in multipart, move the fragment that is the closest to the mouse pointer coordinates 
+   - in multipart paste, keep the original coordinates of the fragments
+   - mouse wheel for zooming in and out (does not work correctly for reactions)
+   - allow zooming option (zoom, nozoom)
+   - openchemlib for SMILES input
+   - SMIRKS input using openchemlib for SMILES input
+   - use openchemlib option
+   - highlight in red molecule to be deleted
+   - highlight in blue molecule to be copied (in reaction mode)
+   - various bug fixes
+   - refactoring of bond code
+
+JSME-2016-02-16
+    - Bug fix for multipart copy
+    - Reaction copy and  structure delete highlight (still buggy)
+    - NCI website demo: example: http->https
+
+    
+JSME-2016-02-01
+    - Bug fix for multipart and reaction (delete, add , undo stack)
+
+
 JSME-2015-12-06
     - Bug fix bond rubberbanding
 

@@ -6,6 +6,7 @@ include_once "./Modules/TestQuestionPool/classes/import/qti12/class.assQuestionI
  * Class for assJSMEQuestion import
  *
  * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+ * @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
  * @version	$Id: $
  * @ingroup 	ModulesTestQuestionPool
  */
@@ -105,9 +106,15 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->setPoints($item->getMetadataEntry("POINTS"));
 		
 		//Question specific fields
-		$this->object->setOptionString($item->getMetadataEntry("option_string"));
+		if ($item->getMetadataEntry("option_string") !== ''){
+			$this->object->setOptionString($item->getMetadataEntry("option_string"));
+		} else {
+			$this->object->setOptionString('nosearchinchiKey nopaste');
+		}
 		$this->object->setSampleSolution($item->getMetadataEntry("sample_solution"));
 		$this->object->setSmilesSolution($item->getMetadataEntry("smiles_solution"));
+		$this->object->setSvg(base64_decode($item->getMetadataEntry("svg")));
+		
 		//End Question specific fields
 		
 		// additional content editing mode information

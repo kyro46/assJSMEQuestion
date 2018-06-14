@@ -5,6 +5,7 @@
 	* assJSMEQuestion plugin
 	*
 	* @author Yves Annanias <yves.annanias@llz.uni-halle.de>
+	* @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
 	* @version $Id$
 	*
 	*/
