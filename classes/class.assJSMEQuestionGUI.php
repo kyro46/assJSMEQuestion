@@ -40,7 +40,6 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		}
 	}
 
-	
 	/**
 	 * Command: edit the question
 	 */
@@ -151,8 +150,6 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		$this->initQuestionForm();
 		if ($this->form->checkInput())
 		{
-            $error = '';
-			
             // write the basic data
 			$this->writeQuestionGenericPostData();
 
@@ -167,7 +164,6 @@ class assJSMEQuestionGUI extends assQuestionGUI
 
 			// indicator to save the question
 			return 0;
-
 		}
 		else
 		{
@@ -262,7 +258,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	* @param boolean $show_feedback Show the question feedback
 	* @param boolean $show_correct_solution Show the correct solution instead of the user solution
 	* @param boolean $show_manual_scoring Show specific information for the manual scoring output
-	* @return The solution output of the question as HTML code
+	* @return string The solution output of the question as HTML code
 	*/
 	function getSolutionOutput( 
 		$active_id,
