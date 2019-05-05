@@ -369,7 +369,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 * @return string HTML Code with the answer specific feedback
 	 * @access public
 	 */
-	function getSpecificFeedbackOutput($active_id, $pass)
+	function getSpecificFeedbackOutput($userSolution)
 	{
 		// Currently not supported
 		$output = "";
