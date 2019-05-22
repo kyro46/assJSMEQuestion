@@ -295,6 +295,47 @@ class assJSMEQuestion extends assQuestion
 
 		return $clone->getId();
 	}
+	
+	/**
+	 * Copies a question
+	 * This is used when a question is copied from a test to a question pool
+	 *
+	 * @access public
+	 */
+	public function createNewOriginalFromThisDuplicate($targetParentId, $targetQuestionTitle = "")
+	{
+	    if ($this->id <= 0)
+	    {
+	        // The question has not been saved. It cannot be duplicated
+	        return;
+	    }
+	    
+	    include_once ("./Modules/TestQuestionPool/classes/class.assQuestion.php");
+	    
+	    $sourceQuestionId = $this->id;
+	    $sourceParentId = $this->getObjId();
+	    
+	    // duplicate the question in database
+	    $clone = $this;
+	    $clone->id = -1;
+	    
+	    $clone->setObjId($targetParentId);
+	    
+	    if ($targetQuestionTitle)
+	    {
+	        $clone->setTitle($targetQuestionTitle);
+	    }
+	    
+	    $clone->saveToDb();
+	    // copy question page content
+	    $clone->copyPageOfQuestion($sourceQuestionId);
+	    // copy XHTML media objects
+	    $clone->copyXHTMLMediaObjectsOfQuestion($sourceQuestionId);
+	    
+	    $clone->onCopy($sourceParentId, $sourceQuestionId, $clone->getObjId(), $clone->getId());
+	    
+	    return $clone->id;
+	}
 
 	/**
 	 * Synchronize a question with its original
@@ -307,6 +348,20 @@ class assJSMEQuestion extends assQuestion
 		parent::syncWithOriginal();
 	}
 
+	/**
+	 * Get a submitted solution array from $_POST
+	 * @return	array
+	 */
+	protected function getSolutionSubmit()
+	{
+	    return array(
+	        'value1' => ilUtil::stripSlashes($_POST['sampleSolution']),
+	        'value2' => ilUtil::stripSlashes($_POST['smilesSolution']),
+	        'value3' => ilUtil::stripSlashes(base64_encode($_POST['svgSolution'])),
+	        'value4' => ilUtil::stripSlashes(NULL),
+	    );
+	}
+	
 	/**
 	 * Returns the points, a learner has reached answering the question
 	 * The points are calculated from the given answers.
@@ -331,25 +386,32 @@ class assJSMEQuestion extends assQuestion
 		{
 			$pass = $this->getSolutionMaxPass($active_id);
 		}
-
-		$query = "SELECT value2 FROM tst_solutions "
-            . " WHERE active_fi = %s AND question_fi = %s AND pass = %s ";
-			
-        $result = $ilDB->queryF($query,
-            array('integer','integer','integer'),
-            array($active_id, $this->getId(), $pass)
-        );
-		$resultrow = $ilDB->fetchAssoc($result);
-
-		//Apply patch to prevent doublegrading see Mantis 110%Testresult-Bugs
-		if( $this->smilesSolution == $resultrow["value2"] )
-			{
-			$points = $this->getMaximumPoints();
-			}	
-			
+		
+		$result = $this->getCurrentSolutionResultSet($active_id, $pass, $authorizedSolution);
+		$solution = $ilDB->fetchAssoc($result);
+		$points = $this->calculateReachedPointsForSolution($solution);
+		
 		return $points;
 	}	
 
+	/**
+	 * Calculate the reached points for a submitted user input
+	 *
+	 * @param mixed user input (scalar, object or array)
+	 */
+	public function calculateReachedPointsforSolution($solution)
+	{
+	    //Apply patch to prevent doublegrading see Mantis 110%Testresult-Bugs
+	    if( $this->smilesSolution == $solution["value2"] )
+	    {
+	        $points = $this->getMaximumPoints();
+	    } else {
+	        $points = 0;
+	    }
+
+	    return $points;
+	}
+	
 	/**
 	* Returns the maximum points, a learner can reach answering the question
 	* @access public
