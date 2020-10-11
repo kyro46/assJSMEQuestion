@@ -145,7 +145,7 @@ class assJSMEQuestion extends assQuestion
 				)
 		);
 			
-		parent::saveToDb($original_id);
+		parent::saveToDb();
 	}
 
 	
@@ -176,6 +176,12 @@ class assJSMEQuestion extends assQuestion
 		include_once("./Services/RTE/classes/class.ilRTE.php");
 		$this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"], 1));
 		$this->setEstimatedWorkingTime(substr($data["working_time"], 0, 2), substr($data["working_time"], 3, 2), substr($data["working_time"], 6, 2));
+
+		try {
+			$this->setLifecycle(ilAssQuestionLifecycle::getInstance($data['lifecycle']));
+		} catch (ilTestQuestionPoolInvalidArgumentException $e) {
+			$this->setLifecycle(ilAssQuestionLifecycle::getDraftInstance());
+		}
 		
 		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles, svg FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
 		if($ilDB->numRows($resultCheck) == 1)
