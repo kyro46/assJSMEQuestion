@@ -1,7 +1,7 @@
 # assJSMEQuestion
-JSME-Questiontypeplugin for ILIAS 6
+JSME-Questiontypeplugin for ILIAS 7
 
-For ILIAS 4.3 to 5.4 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases) and the according branches.
+For ILIAS 4.3 to 6 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases) and the according branches.
 
 ### Questiontype that allows the creation of molecules ###
 
@@ -22,7 +22,7 @@ git clone https://github.com/kyro46/assJSMEQuestion.git
 ```
 and activate it in the ILIAS-Admin-GUI.  
 
-To display the inline-SVGs in PDF this plugin needs the **PhantomJS-renderer** in ILIAS 5.3+, or any other SVG-compatible renderer except TCPDF. 
+To display the inline-SVGs in PDF this plugin needs the **PhantomJS-renderer or any other SVG-compatible renderer except TCPDF** in ILIAS 5.3+. 
 
 Automatic scoring with comparison of SMILE-Code IS implemented, but (due to SMILES-Notation) not valid for molecules with stereo features. Please be cautious.
 Activate manual scoring for better control.

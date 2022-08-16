@@ -571,11 +571,11 @@ class assJSMEQuestion extends assQuestion
 	* @param array $import_mapping An array containing references to included ILIAS objects
 	* @access public
 	*/
-	function fromXML(&$item, &$questionpool_id, &$tst_id, &$tst_object, &$question_counter, &$import_mapping)
+	function fromXML(&$item, &$questionpool_id, &$tst_id, &$tst_object, &$question_counter, &$import_mapping, array $solutionhints = [])
 	{
 		$this->getPlugin()->includeClass("import/qti12/class.assJSMEQuestionImport.php");
 		$import = new assJSMEQuestionImport($this);
-		$import->fromXML($item, $questionpool_id, $tst_id, $tst_object, $question_counter, $import_mapping);
+		$import->fromXML($item, $questionpool_id, $tst_id, $tst_object, $question_counter, $import_mapping, $solutionhints);
 	}
 	
 	/**

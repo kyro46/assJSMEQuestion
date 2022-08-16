@@ -4,12 +4,12 @@
 $id = "assJSMEQuestion";
  
 // code version; must be changed for all code changes
-$version = "6.1.16";
+$version = "7.1.16";
  
 // ilias min and max version; must always reflect the versions that should
 // run with the plugin
-$ilias_min_version = "6.0";
-$ilias_max_version = "6.999";
+$ilias_min_version = "7.0";
+$ilias_max_version = "7.999";
 
 // add the responsible person for the plugin
 
