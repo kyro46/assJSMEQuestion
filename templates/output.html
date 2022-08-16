@@ -24,7 +24,7 @@
 		// hide help-button in about-window			
 		var buttons = document.getElementsByTagName('button');		
 		for (var i=0; i<buttons.length; i++) {
-			if (buttons[i].firstChild.nodeValue == 'Help')
+			if (buttons[i].firstChild.nodeValue == 'Help' || buttons[i].firstChild.nodeValue == 'JSME home')
 				buttons[i].style = "display:none";
 		}  	
 	
@@ -41,7 +41,7 @@
 	}   
    
 	function getJmeFile() {	
-		findButtonbyTextContent();	
+		//findButtonbyTextContent();	
 		color();
 		var jme = jsmeApplet.jmeFile();
 		var smiles = jsmeApplet.smiles();
