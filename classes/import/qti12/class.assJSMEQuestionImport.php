@@ -25,8 +25,8 @@ class assJSMEQuestionImport extends assQuestionImport
 	 * @param array $import_mapping An array containing references to included ILIAS objects
 	 * @access public
 	 */
-    function fromXML(&$item, $questionpool_id, &$tst_id, &$tst_object, &$question_counter, &$import_mapping, array $solutionhints = [])
-	{
+    function fromXML(&$item, $questionpool_id, &$tst_id, &$tst_object, &$question_counter, $import_mapping, array $solutionhints = []) : array
+    {
 		global $ilUser, $ilLog;
 
 		// empty session variable for imported xhtml mobs
@@ -102,7 +102,7 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->setOwner($ilUser->getId());
 		$this->object->setQuestion($this->object->QTIMaterialToString($item->getQuestiontext()));
 		$this->object->setObjId($questionpool_id);
-		$this->object->setEstimatedWorkingTime($duration["h"], $duration["m"], $duration["s"]);
+		//$this->object->setEstimatedWorkingTime($duration["h"], $duration["m"], $duration["s"]);
 		$this->object->setPoints($item->getMetadataEntry("POINTS"));
 		
 		//Question specific fields
@@ -199,6 +199,8 @@ class assJSMEQuestionImport extends assQuestionImport
 		{
 			$import_mapping[$item->getIdent()] = array("pool" => $this->object->getId(), "test" => 0);
 		}
+		
+		return $import_mapping;
 	}
 }
 

@@ -11,8 +11,8 @@
 	*/
 	class ilassJSMEQuestionPlugin extends ilQuestionsPlugin
 	{
-		final function getPluginName()
-		{
+	    final function getPluginName(): string
+	    {
 			return "assJSMEQuestion";
 		}
 		
@@ -21,7 +21,7 @@
 			return "assJSMEQuestion";
 		}
 		
-		final function getQuestionTypeTranslation()
+		final function getQuestionTypeTranslation(): string
 		{
 			return $this->txt('questionType');
 		}
