@@ -1,6 +1,4 @@
 <?php
-	include_once "./Modules/TestQuestionPool/classes/class.ilQuestionsPlugin.php";
-	
 	/**
 	* assJSMEQuestion plugin
 	*
@@ -24,6 +22,14 @@
 		final function getQuestionTypeTranslation(): string
 		{
 			return $this->txt('questionType');
+		}
+		
+		public function uninstall() : bool
+		{
+		    if (parent::uninstall()) {
+		        $this->db->dropTable('il_qpl_qst_jsme_data', false);
+		    }
+		    return true;
 		}
 	}
 ?>
