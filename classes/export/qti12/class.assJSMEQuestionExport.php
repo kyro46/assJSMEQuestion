@@ -81,6 +81,16 @@ class assJSMEQuestionExport extends assQuestionExport
 		$a_xml_writer->xmlElement("fieldlabel", NULL, "svg");
 		$a_xml_writer->xmlElement("fieldentry", NULL, base64_encode($this->object->getSvg()));
 		$a_xml_writer->xmlEndTag("qtimetadatafield");
+		
+		$a_xml_writer->xmlStartTag("qtimetadatafield");
+		$a_xml_writer->xmlElement("fieldlabel", NULL, "inchi");
+		$a_xml_writer->xmlElement("fieldentry", NULL, $this->object->getInchiSolution() );
+		$a_xml_writer->xmlEndTag("qtimetadatafield");
+		
+		$a_xml_writer->xmlStartTag("qtimetadatafield");
+		$a_xml_writer->xmlElement("fieldlabel", NULL, "evaluation_option");
+		$a_xml_writer->xmlElement("fieldentry", NULL,  $this->object->getEvaluationOption());
+		$a_xml_writer->xmlEndTag("qtimetadatafield");
 		//End Question specific fields
 		
 		// additional content editing information

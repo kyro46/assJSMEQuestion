@@ -4,20 +4,15 @@
 $id = "assJSMEQuestion";
  
 // code version; must be changed for all code changes
-$version = "9.0.0";
+$version = "9.0.1";
 
 // ilias min and max version; must always reflect the versions that should
 // run with the plugin
 $ilias_min_version = "9.6";
 $ilias_max_version = "9.999";
 
-//09/2014:
-//$responsible = "Yves Annanias";
-//$responsible_mail = "yves.annanias@llz.uni-halle.de";
-
-//10/2014-...
 $responsible = "Christoph Jobst";
-$responsible_mail = "cjobst@wifa.uni-leipzig.de";
+$responsible_mail = "iliasplugins.christoph.jobst@outlook.de";
 
 //  JSME by:
 //  Dr. Peter Ertl: 

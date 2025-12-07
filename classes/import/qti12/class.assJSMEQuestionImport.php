@@ -114,7 +114,13 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->setSampleSolution($item->getMetadataEntry("sample_solution"));
 		$this->object->setSmilesSolution($item->getMetadataEntry("smiles_solution"));
 		$this->object->setSvg(base64_decode($item->getMetadataEntry("svg")));
+		$this->object->setInchiSolution($item->getMetadataEntry("inchi"));
 		
+		if (!empty($item->getMetadataEntry("evaluation_option"))){
+		    $this->object->setEvaluationOption((int)$item->getMetadataEntry("evaluation_option"));
+		} else {
+		    $this->object->setEvaluationOption(0);
+		}
 		//End Question specific fields
 		
 		// additional content editing mode information

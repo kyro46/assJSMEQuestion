@@ -1,3 +1,21 @@
+<script>
+	var JSApplet = {};
+	JSApplet.Inchi = {};
+
+	function computeInchi(mol) {
+		var result;
+		var tmp_function_name = "__local_ff";
+		JSApplet.Inchi[tmp_function_name] = function (inchi_result) {
+			result = inchi_result
+		};
+		JSApplet.Inchi.computeInchi(mol, "JSApplet.Inchi." + tmp_function_name);
+		delete JSApplet.Inchi[tmp_function_name];
+
+		return result;
+	}
+
+</script>
+
 <p>{QUESTIONTEXT}</p>
 <!-- style="pointer-events:none;" -->
 <div id="jsme_container" onmouseup="getJmeFile();" onmousemove="color();"></div>
@@ -5,19 +23,30 @@
 	<input type="hidden" id="answerString" name="sampleSolution" value="{MOLECULE}" />
 	<input type="hidden" id="smilesString" name="smilesSolution"  value="{SMILES}"/>
 	<input type="hidden" id="svgString" name="svgSolution"  value='{SVG}'/>
+	<input type="hidden" id="inchiString" name="inchiSolution"  value='{INCHI}'/>
 </form>
 
 <textarea rows="10" cols="50" id="answer" style="display:none;">{MOLECULE}</textarea>
-<label id="smileslabel">{SMILES}</label>
+SMILES= <label id="smileslabel">{SMILES}</label>
+<br/>
 <textarea rows="10" cols="50" id="svg" style="display:none;">{SVG}</textarea>
+<label id="inchilabel">{INCHI}</label>
 <script>
-    //this function will be called after the JavaScriptApplet code has been loaded.
+        function showInchi(jsme_event) {
+            var mol = jsme_event.src.molFile();
+            var result = computeInchi(mol)
+            document.getElementById("inchilabel").innerHTML = result.inchi;
+            document.getElementById("inchiString").value = result.inchi;
+        }
+
+	 //this function will be called after the JavaScriptApplet code has been loaded.
     function jsmeOnLoad() {
         jsmeApplet = new JSApplet.JSME("jsme_container", "500px", "500px");
         jsmeApplet.readMolecule("{MOLECULE}");
         jsmeApplet.options("{OPTIONS}");
         jsmeApplet.setHelpURL("");
         color();
+		jsmeApplet.setCallBack("AfterStructureModified", showInchi);
    }
    
    function findButtonbyTextContent() {
@@ -27,7 +56,6 @@
 			if (buttons[i].firstChild.nodeValue == 'Help' || buttons[i].firstChild.nodeValue == 'JSME home')
 				buttons[i].style = "display:none";
 		}  	
-	
 	}
 	
 	function color(){
@@ -50,15 +78,10 @@
 		document.getElementById("answerString").value = jme;
 		document.getElementById("smilesString").value = smiles;
 		document.getElementById("svgString").value = svg;
-
 		
 		document.getElementById("answer").placeholder = jme;
 		document.getElementById("smileslabel").innerHTML = smiles;
-		document.getElementById("svglabel").placeholder = svg;
-
-		document.getElementById("answerForm").submit();				
+		document.getElementById("svg").placeholder = svg;
 	}
 </script>
-
-
   

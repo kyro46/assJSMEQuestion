@@ -17,8 +17,13 @@ class assJSMEQuestion extends assQuestion
 	var $sampleSolution = "";
 	// for manual correction
 	var $smilesSolution = "";
-	//SVG
+	// SVG
 	var $svg = "";
+	// InChI
+	var $inchi = "";
+	// Evaluation option (smiles or inchi for automatic scoring), 'evaloption' in DB
+	// SMILES (default) = 0, InChI = 1
+	var $evaluationOption = 0;
 	
 	/**
 	 * Constructor
@@ -110,10 +115,14 @@ class assJSMEQuestion extends assQuestion
 	 */
 	public function isComplete(): bool
 	{
-		//Add SMILES-String as requirement
 	    if(!empty($this->title) && !empty($this->author) && !empty($this->question) && $this->getMaximumPoints() > 0)
 	    {
-			return true;
+	        // If only the evalOption was changed to InChI but the corresponding InChI-STRING is missing, the qst is not complete
+	        if (empty($this->getInchiSolution()) && $this->getEvaluationOption() == 1) {
+	            return false;
+	        } else {
+	            return true;
+	        }
 		}
 		else
 		{
@@ -137,6 +146,14 @@ class assJSMEQuestion extends assQuestion
 		$this->svg = $svg;
 	}
 	
+	function setInchiSolution($inchi){
+	    $this->inchi = $inchi;
+	}
+	
+	function setEvaluationOption($evaluationOption){
+	    $this->evaluationOption = $evaluationOption;
+	}
+	
 	function getOptionString()
 	{
 		return $this->optionString;
@@ -153,7 +170,15 @@ class assJSMEQuestion extends assQuestion
 	function getSvg(){
 		return $this->svg;
 	}
-
+	
+	function getInchiSolution(){
+	    return $this->inchi;
+	}
+	
+	function getEvaluationOption(){
+	    return $this->evaluationOption;
+	}
+	
 	/**
 	 * Saves a question object to a database
 	 *
@@ -180,14 +205,16 @@ class assJSMEQuestion extends assQuestion
 			array("integer"),
 			array($this->getId())
 		);
-		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution, smiles, svg) VALUES (%s, %s, %s, %s, %s)", 
-				array("integer", "text", "text", "text", "clob"),
+		$affectedRows = $ilDB->manipulateF("INSERT INTO il_qpl_qst_jsme_data (question_fi, option_string, solution, smiles, svg, inchi, evaloption) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+				array("integer", "text", "text", "text", "clob", "text", "integer"),
 				array(
 					$this->getId(),
 				    $this->getOptionString(),
 				    $this->getSampleSolution(),
 				    $this->getSmilesSolution(),
-				    $this->getSvg()
+				    $this->getSvg(),
+				    $this->getInchiSolution(),
+				    $this->getEvaluationOption()
 				)
 		);
 			
@@ -236,7 +263,7 @@ class assJSMEQuestion extends assQuestion
 		    {
 		    }
 		    
-    		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles, svg FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
+    		$resultCheck= $ilDB->queryF("SELECT option_string, solution, smiles, svg, inchi, evaloption FROM il_qpl_qst_jsme_data WHERE question_fi = %s", array('integer'), array($question_id));
     		if($ilDB->numRows($resultCheck) == 1)
     		{
     			$data = $ilDB->fetchAssoc($resultCheck);
@@ -244,9 +271,9 @@ class assJSMEQuestion extends assQuestion
     			$this->setSampleSolution($data["solution"]);
     			$this->setSmilesSolution($data["smiles"]);	
     			$this->setSvg($data["svg"]);
+    			$this->setInchiSolution($data["inchi"]);
+    			$this->setEvaluationOption($data["evaloption"]);
     		}
-		
-
 		}
 		
 		parent::loadFromDb($question_id);
@@ -413,7 +440,7 @@ class assJSMEQuestion extends assQuestion
 	    $value1 = isset($_POST['sampleSolution']) ? trim(ilUtil::stripSlashes($_POST['sampleSolution'])) : null;
 	    $value2 = isset($_POST['smilesSolution']) ? trim(ilUtil::stripSlashes($_POST['smilesSolution'])) : null;
 	    $value3 = isset($_POST['svgSolution'])    ? trim(ilUtil::stripSlashes(base64_encode($_POST['svgSolution']))) : null;
-	    $value4 = NULL;
+	    $value4 = isset($_POST['inchiSolution']) ? trim(ilUtil::stripSlashes($_POST['inchiSolution'])) : null;;
 	    
 	    return array(
 	        'value1' => empty($value1)? null : (string) $value1,
@@ -491,12 +518,33 @@ class assJSMEQuestion extends assQuestion
 	 */
 	public function calculateReachedPointsforSolution($solution)
 	{
-	    //Apply patch to prevent doublegrading see Mantis 110%Testresult-Bugs
-	    if( $this->getSmilesSolution() == $solution["value2"] )
-	    {
-	        $points = $this->getMaximumPoints();
+	    $points = 0;
+	    
+	    $useInchi = ($this->getEvaluationOption() === 1); // 0 for SMILES
+	    $inchiSolution = $this->getInchiSolution();
+	    $smilesSolution = $this->getSmilesSolution();
+	    
+	    $userInchi = $solution["value4"] ?? null;
+	    $userSmiles = $solution["value2"] ?? null;
+	    
+	    if ($useInchi) {
+	        // InChI evaluation with fallback
+	        if (!empty($inchiSolution) && !empty($userInchi)) {
+	            // compare InChI sample and user input
+	            if ($inchiSolution === $userInchi) {
+	                $points = $this->getMaximumPoints();
+	            }
+	        } else {
+	            // Fallback: old qst or answer with no InChI sample or InChI user input, so try SMILES
+	            if (!empty($smilesSolution) && !empty($userSmiles) && $smilesSolution === $userSmiles) {
+	                $points = $this->getMaximumPoints();
+	            }
+	        }
 	    } else {
-	        $points = 0;
+	        // SMILIES evaluation
+	        if (!empty($smilesSolution) && !empty($userSmiles) && $smilesSolution === $userSmiles) {
+	            $points = $this->getMaximumPoints();
+	        }
 	    }
 	    
 	    return $points;
@@ -561,9 +609,9 @@ class assJSMEQuestion extends assQuestion
 		$value1_solution = $_POST['sampleSolution'];
 		$value2_smiles = $_POST['smilesSolution'];
 		$value3_svg = base64_encode($_POST['svgSolution']);
-        $value4_InChI = null;        
+		$value4_InChI = $_POST['inchiSolution'];        
 		
-        if (strlen($value1_solution) > 0)
+		if (strlen($value1_solution) > 0 && $value1_solution <> '0 0') // '0 0' is set by the JSME-Editor "clear canvas" action as internal representation
 		{	
 		    $entered_values = true;
 		    $this->saveCurrentSolution($active_id, $pass, $value1_solution, $value2_smiles, $authorized);
@@ -578,7 +626,7 @@ class assJSMEQuestion extends assQuestion
 		        'assessment',
 		        $entered_values ? 'log_user_entered_values' : 'log_user_not_entered_values',
 		        ilObjAssessmentFolder::_getLogLanguage()
-		        ),
+		        ) .  $entered_values ? ' SMILES=' . $value1_solution : null ,
 		        $active_id,
 		        $this->getId()
 		        );
@@ -627,14 +675,28 @@ class assJSMEQuestion extends assQuestion
 		$i = 1;
 		$worksheet->setCell($startrow + $i, 0, $this->lng->txt($this->plugin->txt("label_value2")));
 		$worksheet->setBold($worksheet->getColumnCoord(0) . ($startrow + $i));
-		
-		if (strlen($solutions[0]["value2"]))
+    
+		if ($this->getEvaluationOption() === 0)
 		{
-			$worksheet->setCell($startrow + $i, 1, $solutions[0]["value2"]);		
+		    if (strlen($solutions[0]["value2"]))
+		    {
+		        $worksheet->setCell($startrow + $i, 1, $solutions[0]["value2"]);
+		    }
+		    $i++;
+		    
+		    return $startrow + $i + 1;
 		}
-		$i++;
 		
-		return $startrow + $i + 1;
+		if ($this->getEvaluationOption() === 1)
+		{
+		    if (strlen($solutions[1]["value2"]))
+		    {
+		        $worksheet->setCell($startrow + $i, 1, $solutions[1]["value2"]);
+		    }
+		    $i++;
+		    
+		    return $startrow + $i + 1;
+		}
 	}
 }
 ?>

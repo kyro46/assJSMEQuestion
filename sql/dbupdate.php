@@ -77,3 +77,28 @@ if($ilDB->tableColumnExists('qpl_qst_type', 'plugin_name'))
     $ilDB->manipulate("UPDATE qpl_qst_type set plugin_name = type_tag WHERE type_tag ='assJSMEQuestion'");
 }
 ?>
+<#8>
+<?php
+	//Add InChI to table for optional autoevaluation
+    if(!$ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'inchi'))
+    {
+        $ilDB->addTableColumn('il_qpl_qst_jsme_data', 'inchi', array(
+                'type' => 'text',
+                'notnull' => false,
+            )
+        );
+    }
+?>
+<#9>
+<?php
+    //Add selection between SMILES (0) and InChI (1) and possible more for autoevaluation
+    if(!$ilDB->tableColumnExists('il_qpl_qst_jsme_data', 'evaloption'))
+    {
+        $ilDB->addTableColumn('il_qpl_qst_jsme_data', 'evaloption', array(
+                'type' => 'integer',
+                'notnull' => false,
+                'default' => 0,
+            )
+        );
+    }
+?>

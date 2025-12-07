@@ -128,6 +128,22 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		$points->setValue($this->object->getPoints());
 		$form->addItem($points);
 		
+		// SMILES (0) or InChI (1) for evaluation
+		$radioGroup = new ilRadioGroupInputGUI($plugin->txt("label_evalOption"), 'evalOption');
+		$radioGroup->setInfo($plugin->txt("info_evalOption"));
+		$radioGroup->setValue((string) ((int) ($this->object->getEvaluationOption())));
+		$modeSMILES = new ilRadioOption(
+		    $plugin->txt("label_evalOption_smiles"),
+		    '0'
+		    );
+		$modeInChI = new ilRadioOption(
+		    $plugin->txt("label_evalOption_inchi"),
+		    '1'
+		    );
+		$radioGroup->addOption($modeSMILES);
+		$radioGroup->addOption($modeInChI);
+		$form->addItem($radioGroup);
+		
 		// optionString for the JSME-Applet
 		include_once("./Services/Form/classes/class.ilTextInputGUI.php");
 		$optionString = new ilTextInputGUI($plugin->txt("optionString"), "optionString");		
@@ -138,10 +154,9 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		// JSME-Applet for sampleSolution
 		include_once("./Services/Form/classes/class.ilCustomInputGUI.php");
 		$sampleSolution = new ilCustomInputGUI($plugin->txt("sampleSolution"), "sampleSolution");
-		$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg());
+		$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), $this->object->getInchiSolution());
 		$sampleSolution->setHtml($template->get());
 		$form->addItem($sampleSolution);												
-
 
 		$this->populateTaxonomyFormSection($form);
 		$this->addQuestionFormCommandButtons($form);
@@ -167,6 +182,8 @@ class assJSMEQuestionGUI extends assQuestionGUI
 			$this->object->setSampleSolution($_POST["sampleSolution"]);
 			$this->object->setSmilesSolution($_POST["smilesSolution"]);
 			$this->object->setSvg($_POST["svgSolution"]);
+			$this->object->setInchiSolution($_POST["inchiSolution"]);
+			$this->object->setEvaluationOption($_POST["evalOption"]);
 			
 			// save taxonomy assignment
 			$this->saveTaxonomyAssignments();
@@ -210,9 +227,10 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		
 		$userSampleSolution = $user_solution["value1"];
 		$userSmiles = $user_solution["value2"];
-		$userSvg = base64_decode($user_solution["value3"]);
+		$userSvg = base64_decode($user_solution["value3"] ?? '');
+		$userInchi = $user_solution["value4"];
 		
-		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $userSmiles, $userSvg);
+		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $userSmiles, $userSvg, $userInchi);
 		$questionoutput = $template->get();
 		$pageoutput = $this->outQuestionPage("", $is_postponed, $active_id, $questionoutput);
 		return $pageoutput; 
@@ -222,14 +240,17 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	/**
 	 * Get the output for preview and test
 	 */
-	function getQuestionOutput($question, $options, $solution ,$smiles, $svg, $temp="output.html"){
+	function getQuestionOutput($question, $options, $solution ,$smiles, $svg, $inchi, $temp="output.html"){
 		global $tpl;	
 		$plugin       = $this->object->getPlugin();		
 		$template     = $plugin->getTemplate($temp);
+
+		$tpl->addJavaScript($plugin->getDirectory().'/templates/jsme/96E40B969193BD74B8A621486920E79C.cache.js');
 		$tpl->addJavaScript($plugin->getDirectory().'/templates/jsme/jsme.nocache.js');
 		$template->setVariable("QUESTIONTEXT", self::prepareTextareaOutput($question, TRUE));		
 		$template->setVariable("MOLECULE",$solution);
 		$template->setVariable("SMILES",$smiles);
+		$template->setVariable("INCHI",$inchi);
 		$template->setVariable("OPTIONS", $options);
 		$template->setVariable("SVG", $svg);
 		
@@ -256,7 +277,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	        $solution = array('value1' => null, 'value2' => null, 'value3' => null, 'value4' => null);
 	    }
 	    
-		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), "", "", "");		
+		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), "", "", "", "");		
 		
 		$questionoutput = $template->get();
 		if(!$show_question_only)
@@ -314,7 +335,7 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		}						
 		
 		$userSampleSolution = $user_solution["value1"];
-		$userSvg = base64_decode($user_solution["value3"]);
+		$userSvg = base64_decode($user_solution["value3"] ?? '');
 
 		if($userSvg== '' || $userSvg== null) {
 		    $userSvg = $this->object->getPlugin()->txt("old_plugin_solution");
@@ -334,22 +355,22 @@ class assJSMEQuestionGUI extends assQuestionGUI
 				
 		if ($show_correct_solution)
 		{			
-			//$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");		
-			$template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $sampleSvg, "solution.html");
+			//$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "", "solution.html");
+		    $template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $sampleSvg, $this->object->getInchiSolution(), "solution.html");
 			$template->setVariable("ID", 'S'.$this->object->getId());
 			return $template->get();			
 			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden
 		}
 
 		//$templateUser = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $user_solution[0]["value2"], $userSvg, "solution.html");
-		$templateUser = $this->getQuestionOutput($this->object->getQuestion(), "", "", $user_solution["value2"], $userSvg, "solution.html");
+		$templateUser = $this->getQuestionOutput($this->object->getQuestion(), "", "", $user_solution["value2"], $userSvg, $user_solution["value4"], "solution.html");
 		$templateUser->setVariable("ID", 'U'.$this->object->getId());
 		$questionoutput = $templateUser->get();
 		
 		if ($show_manual_scoring && strlen($this->object->getSampleSolution()) > 0 )
 		{
 			//$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");
-			$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), "", "", $this->object->getSmilesSolution(), $sampleSvg, "solution.html");
+		    $templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), "", "", $this->object->getSmilesSolution(), $sampleSvg,  $this->object->getInchiSolution(), "solution.html");
 			$templateSample->setVariable("ID", 'S'.$this->object->getId());
 			$questionoutput .= "<br>" . $templateSample->get();
 		}
