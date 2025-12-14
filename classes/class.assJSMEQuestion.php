@@ -3,14 +3,17 @@
 /**
  * Class for JSMEQuestion Question
  *
- * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
- * @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
+ * @author Christoph Jobst <iliasplugins.christoph.jobst@outlook.de>
  * @version	$Id:  $
  * @ingroup ModulesTestQuestionPool
  */
-class assJSMEQuestion extends assQuestion
+
+use ILIAS\Test\Logging\AdditionalInformationGenerator;
+use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
+
+class assJSMEQuestion extends assQuestion implements ilObjQuestionScoringAdjustable, QuestionAutosaveable
 {
-    protected $plugin = null;
+    private ilPlugin $plugin;
     
 	// options for jsme-applet
 	var $optionString = "nosearchinchiKey nopaste ";
@@ -47,10 +50,36 @@ class assJSMEQuestion extends assQuestion
 	    $question = ""
 	    )
 	{
+	    parent::__construct($title, $comment, $author, $owner, $question);
+	    
+	    try {
+	        global $DIC;
+	        
+	        /** @var ilComponentRepository $component_repository */
+	        $component_repository = $DIC["component.repository"];
+	        
+	        $info = null;
+	        $plugin_name = 'assJSMEQuestion';
+	        $info = $component_repository->getPluginByName($plugin_name);
+	        
+	        /** @var ilComponentFactory $component_factory */
+	        $component_factory = $DIC["component.factory"];
+	        
+	        /** @var ilQuestionsPlugin $plugin_obj */
+	        $plugin_obj = $component_factory->getPlugin($info->getId());
+	        
+	        if (!is_null($info) && $info->isActive()) {
+	            $this->setPlugin($plugin_obj);
+	        } else {
+	            throw new ilPluginException($plugin_name . ' plugin is not active');
+	        }
+	    } catch (ilPluginException $e) {
+	        global $tpl;
+	        $tpl->setOnScreenMessage('failure', $e->getMessage(), true);
+	    }
+	    
 	    // needed for excel export
 	    $this->getPlugin()->loadLanguageModule();
-	    
-	    parent::__construct($title, $comment, $author, $owner, $question);
 	}
 	
 	/**
@@ -71,7 +100,7 @@ class assJSMEQuestion extends assQuestion
 	 *
 	 * @return mixed 	the name(s) of the additional tables (array or string)
 	 */
-	function getAdditionalTableName()
+	function getAdditionalTableName(): string
 	{
 	    return "il_qpl_qst_jsme_data";
 	}
@@ -95,17 +124,14 @@ class assJSMEQuestion extends assQuestion
 	 *
 	 * @return object The plugin object
 	 */
-	public function getPlugin()
+	public function getPlugin(): ilPlugin
 	{
-	    global $DIC;
-	    
-	    if ($this->plugin == null)
-	    {
-	        /** @var ilComponentFactory $component_factory */
-	        $component_factory = $DIC["component.factory"];
-	        $this->plugin = $component_factory->getPlugin('assJSMEQuestion');
-	    }
 	    return $this->plugin;
+	}
+	
+	public function setPlugin(ilPlugin $plugin): void
+	{
+	    $this->plugin = $plugin;
 	}
 	
 	/**
@@ -280,157 +306,6 @@ class assJSMEQuestion extends assQuestion
 	}	
 
 	/**
-	 * Duplicates a question
-	 * This is used for copying a question to a test
-	 *
-	 * @access public
-	 */
-	function duplicate($for_test = true, $title = "", $author = "", $owner = "", $testObjId = null) : int
-	{
-	    if ($this->getId() <= 0)
-	    {
-	        // The question has not been saved. It cannot be duplicated
-	        return -1;
-	    }
-
-		// make a real clone to keep the object unchanged
-		$clone = clone $this;
-							
-		$original_id = $this->questioninfo->getOriginalId($this->id);
-		$clone->setId(-1);
-
-		if( (int) $testObjId > 0 )
-		{
-		    $clone->setObjId($testObjId);
-		}
-		
-		if (!empty($title))
-		{
-		    $clone->setTitle($title);
-		}
-		if (!empty($author))
-		{
-		    $clone->setAuthor($author);
-		}
-		if (!empty($owner))
-		{
-		    $clone->setOwner($owner);
-		}
-		
-		if ($for_test)
-		{
-		    $clone->saveToDb($original_id);
-		}
-		else
-		{
-		    $clone->saveToDb();
-		}	
-
-		// copy question page content
-		$clone->copyPageOfQuestion($this->getId());
-		// copy XHTML media objects
-		$clone->copyXHTMLMediaObjectsOfQuestion($this->getId());
-
-		// call the event handler for duplication
-		$clone->onDuplicate($this->getObjId(), $this->getId(), $clone->getObjId(), $clone->getId());
-
-		return $clone->getId();
-	}
-
-	/**
-	 * Copies a question
-	 * This is used when a question is copied on a question pool
-	 *
-	 * @param integer	$target_questionpool_id
-	 * @param string	$title
-	 *
-	 * @return void|integer Id of the clone or nothing.
-	 */
-	function copyObject($target_questionpool_id, $title = "")
-	{
-		if ($this->getId() <= 0)
-		{
-			// The question has not been saved. It cannot be duplicated
-			return;
-		}
-
-		// make a real clone to keep the object unchanged
-		$clone = clone $this;
-				
-		$original_id = assQuestion::_getOriginalId($this->getId());
-		$source_questionpool_id = $this->getObjId();
-		$clone->setId(-1);
-		$clone->setObjId($target_questionpool_id);
-		if (!empty($title))
-		{
-			$clone->setTitle($title);
-		}
-				
-		// save the clone data
-		$clone->saveToDb();
-		
-		// copy question page content
-		$clone->copyPageOfQuestion($original_id);
-		// copy XHTML media objects
-		$clone->copyXHTMLMediaObjectsOfQuestion($original_id);
-
-		// call the event handler for copy
-		$clone->onCopy($source_questionpool_id, $original_id, $clone->getObjId(), $clone->getId());
-
-		return $clone->getId();
-	}
-	
-	/**
-	 * Create a new original question in a question pool for a test question
-	 * @param int $targetParentId			id of the target question pool
-	 * @param string $targetQuestionTitle
-	 * @return int|void
-	 */
-	public function createNewOriginalFromThisDuplicate($targetParentId, $targetQuestionTitle = "")
-	{
-	    if ($this->id <= 0)
-	    {
-	        // The question has not been saved. It cannot be duplicated
-	        return;
-	    }
-	    	    
-	    $sourceQuestionId = $this->id;
-	    $sourceParentId = $this->getObjId();
-	    
-	    // make a real clone to keep the object unchanged
-	    $clone = clone $this;
-	    $clone->setId(-1);
-	    
-	    $clone->setObjId($targetParentId);
-	    
-	    if (!empty($targetQuestionTitle))
-	    {
-	        $clone->setTitle($targetQuestionTitle);
-	    }
-	    
-	    $clone->saveToDb();
-	    // copy question page content
-	    $clone->copyPageOfQuestion($sourceQuestionId);
-	    // copy XHTML media objects
-	    $clone->copyXHTMLMediaObjectsOfQuestion($sourceQuestionId);
-	    
-	    $clone->onCopy($sourceParentId, $sourceQuestionId, $clone->getObjId(), $clone->getId());
-	    
-	    return $clone->getId();
-	}
-
-	/**
-	 * Synchronize a question with its original
-	 * You need to extend this function if a question has additional data that needs to be synchronized
-	 *
-	 * @access public
-	 */
-	function syncWithOriginal() : void
-	{
-	    parent::syncWithOriginal();
-	}
-
-	/**
 	 * Get the submitted user input as a serializable value
 	 *
 	 * @return mixed user input (scalar, object or array)
@@ -493,9 +368,19 @@ class assJSMEQuestion extends assQuestion
 	        // In this case the last saved record wins
 	        
 	        // JSME stores 4 instead of 2 values in the solution table in consecutive records!
-	        $solution_svg_inchi = end($solutions); // the generated image and the yet unused InChI
-	        $solution_code_smiles = prev($solutions); // the internal molecule code and the SMILES-representation
-
+	        $last  = end($solutions);  // presumably the generated image and InChI
+	        $prev  = prev($solutions); // presumably the internal molecule code and the SMILES-representation
+	        
+	        if ((isset($last['value2']) && str_starts_with($last['value2'], 'InChI='))||   // Only for new Questions in plugin versions 9.1 or 10.0+
+	            (isset($last['value1']) && str_starts_with($last['value1'], 'PHN2Zy')))    // SVG as base64 always starts this way
+	        {
+	            $solution_svg_inchi     = $last;
+	            $solution_code_smiles   = $prev;
+	        } else {
+	            $solution_svg_inchi     = $prev;
+	            $solution_code_smiles   = $last;
+	        }
+	        
 	        $value1 = $solution_code_smiles['value1'];
 	        $value2 = $solution_code_smiles['value2'];
 	        $value3 = $solution_svg_inchi['value1'];
@@ -554,20 +439,15 @@ class assJSMEQuestion extends assQuestion
 	 * Returns the points, a learner has reached answering the question
 	 * The points are calculated from the given answers.
 	 *
-	 * @param integer $active 	The Id of the active learner
-	 * @param integer $pass 	The Id of the test pass
-	 * @param boolean $returndetails (deprecated !!)
-	 * @return integer/array $points/$details (array $details is deprecated !!)
+	 * @param integer $active_id 	The Id of the active learner
+	 * @param ?integer $pass 	The Id of the test pass
+	 * @param boolean $authorizedSolution
+	 * @return float $points
 	 * @access public
 	 * @see  assQuestion::calculateReachedPoints()
 	 */
-	function calculateReachedPoints($active_id, $pass = NULL, $authorizedSolution = true, $returndetails = false) :array|float
-	{
-        if( $returndetails )
-        {
-            throw new ilTestException('return details not implemented for '.__METHOD__);
-        }
-		
+	public function calculateReachedPoints(int $active_id, ?int $pass = null, bool $authorized_solution = true): float
+    {
 		global $ilDB;
 		
 		if (is_null($pass))
@@ -575,7 +455,7 @@ class assJSMEQuestion extends assQuestion
 			$pass = $this->getSolutionMaxPass($active_id);
 		}
 		
-		$solution = $this->getSolutionStored($active_id, $pass, $authorizedSolution);
+		$solution = $this->getSolutionStored($active_id, $pass, $authorized_solution);
 		return $this->calculateReachedPointsForSolution($solution);
 	}	
 
@@ -587,53 +467,31 @@ class assJSMEQuestion extends assQuestion
 	 * @access 	public
 	 * @see 	assQuestion::saveWorkingData()
 	 */
-	function saveWorkingData($active_id, $pass = NULL, $authorized = true) : bool
+	public function saveWorkingData(
+	    int $active_id,
+	    ?int $pass = null,
+	    bool $authorized = true
+	    ): bool 
 	{
-	    global $ilDB;
-	    global $ilUser;
-	    
-	    if (is_null($pass))
-	    {
-	        include_once "./Modules/Test/classes/class.ilObjTest.php";
-	        $pass = ilObjTest::_getPass($active_id);
-	    }
-
-		$ilDB->manipulateF("DELETE FROM tst_solutions WHERE active_fi = %s AND question_fi = %s AND pass = %s",
-			array(
-				"integer", "integer", "integer"),
-			array(
-				$active_id,	$this->getId(),	$pass)
-		);
-
-		$entered_values = false;		
-		$value1_solution = $_POST['sampleSolution'];
-		$value2_smiles = $_POST['smilesSolution'];
-		$value3_svg = base64_encode($_POST['svgSolution']);
-		$value4_InChI = $_POST['inchiSolution'];        
-		
-		if (strlen($value1_solution) > 0 && $value1_solution <> '0 0') // '0 0' is set by the JSME-Editor "clear canvas" action as internal representation
-		{	
-		    $entered_values = true;
-		    $this->saveCurrentSolution($active_id, $pass, $value1_solution, $value2_smiles, $authorized);
-		    $this->saveCurrentSolution($active_id, $pass, $value3_svg, $value4_InChI, $authorized); 
-		}
-		
-		
-		// Log whether the user entered values
-		if (ilObjAssessmentFolder::_enabledAssessmentLogging())
-		{
-		    assQuestion::logAction($this->lng->txtlng(
-		        'assessment',
-		        $entered_values ? 'log_user_entered_values' : 'log_user_not_entered_values',
-		        ilObjAssessmentFolder::_getLogLanguage()
-		        ) .  $entered_values ? ' SMILES=' . $value1_solution : null ,
-		        $active_id,
-		        $this->getId()
-		        );
-		}
-		return true;
+        if ($pass === null) {
+            $pass = ilObjTest::_getPass($active_id);
+        }
+        
+        $answer = $this->getSolutionSubmit();
+        $this->getProcessLocker()->executeUserSolutionUpdateLockOperation(
+            function () use ($answer, $active_id, $pass, $authorized) {
+                $this->removeCurrentSolution($active_id, $pass, $authorized);
+                
+                if (strlen($answer['value1']) > 0 && $answer['value1'] <> '0 0') // '0 0' is set by the JSME-Editor "clear canvas" action as internal representation
+                    // value1: editor representation, value2: SMILES, value3: SVG, value4: InChI
+                    $this->saveCurrentSolution($active_id, $pass, $answer['value1'], $answer['value2'], $authorized); // TODO - Intruduce STEPS
+                    $this->saveCurrentSolution($active_id, $pass, $answer['value3'], $answer['value4'], $authorized); 
+                }
+            );
+        
+        return true;
 	}
-	
+
 	/**
 	 * Reworks the allready saved working data if neccessary
 	 *
@@ -653,7 +511,7 @@ class assJSMEQuestion extends assQuestion
 	 * @return string The answer table name
 	 * @access public
 	 */
-	public function getAnswerTableName(): string
+	public function getAnswerTableName(): array|string
 	{
 	    return "";
 	}
@@ -664,12 +522,11 @@ class assJSMEQuestion extends assQuestion
 	 * @access public
 	 * @see assQuestion::setExportDetailsXLS()
 	 */
-	public function setExportDetailsXLS(ilAssExcelFormatHelper $worksheet, int $startrow, int $active_id, int $pass): int
+	public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass) : int
 	{
+	    parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
 		
 		global $lng;
-		parent::setExportDetailsXLS($worksheet, $startrow, $active_id, $pass);
-
 		$solutions = $this->getSolutionValues($active_id, $pass);
 		
 		$i = 1;
@@ -698,5 +555,98 @@ class assJSMEQuestion extends assQuestion
 		    return $startrow + $i + 1;
 		}
 	}
+	
+	// Generic log
+	public function toLog(AdditionalInformationGenerator $additional_info) : array
+	{
+	    return [
+	        AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
+	        AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
+	        AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
+	        AdditionalInformationGenerator::KEY_QUESTION_REACHABLE_POINTS => $this->getPoints(),
+	        AdditionalInformationGenerator::KEY_FEEDBACK => [
+	            AdditionalInformationGenerator::KEY_QUESTION_FEEDBACK_ON_INCOMPLETE => $this->formatSAQuestion($this->feedbackOBJ->getGenericFeedbackTestPresentation($this->getId(), false)),
+	            AdditionalInformationGenerator::KEY_QUESTION_FEEDBACK_ON_COMPLETE => $this->formatSAQuestion($this->feedbackOBJ->getGenericFeedbackTestPresentation($this->getId(), true))
+	        ]
+	    ];
+	}
+	
+	// JSME -> SMILES, InChI to Log
+	public function solutionValuesToLog(AdditionalInformationGenerator $additional_info, array $solution_values) : string
+	{
+	    if (!array_key_exists(0, $solution_values)
+	        || !array_key_exists('value2', $solution_values[0]))
+	    {
+	            return '';
+	     }
+	       
+	     $last  = end($solution_values);  // presumably the generated image and InChI
+	     $prev  = prev($solution_values); // presumably the internal molecule code and the SMILES-representation
+	     
+	     if ((isset($last['value2']) && str_starts_with($last['value2'], 'InChI='))||
+	         (isset($last['value1']) && str_starts_with($last['value1'], 'PHN2Zy')))
+	     {
+	         $solution_svg_inchi     = $last;
+	         $solution_code_smiles   = $prev;
+	     } else {
+	         $solution_svg_inchi     = $prev;
+	         $solution_code_smiles   = $last;
+	     }
+
+	     $value1 = $solution_code_smiles['value1'];
+	     $value2 = $solution_code_smiles['value2'];
+	     $value3 = $solution_svg_inchi['value1'];
+	     $value4 = $solution_svg_inchi['value2'];
+	        
+	        
+        return $this->refinery->string()->stripTags()->transform(
+            html_entity_decode('SMILES=' . $value2 . ' + ' . $value4)
+            );;
+	}
+	
+	// JSME -> SMILES, InChI to Log
+	public function solutionValuesToText(array $solution_values) : string
+	{
+	    if (!array_key_exists(0, $solution_values)
+	        || !array_key_exists('value2', $solution_values[0]))
+	    {
+	        return '';
+	    }
+	    
+	    $last  = end($solution_values);  // presumably the generated image and InChI
+	    $prev  = prev($solution_values); // presumably the internal molecule code and the SMILES-representation
+	    
+	    if ((isset($last['value2']) && str_starts_with($last['value2'], 'InChI='))||
+	        (isset($last['value1']) && str_starts_with($last['value1'], 'PHN2Zy')))
+	    {
+	        $solution_svg_inchi     = $last;
+	        $solution_code_smiles   = $prev;
+	    } else {
+	        $solution_svg_inchi     = $prev;
+	        $solution_code_smiles   = $last;
+	    }
+	    
+	    $value1 = $solution_code_smiles['value1'];
+	    $value2 = $solution_code_smiles['value2'];
+	    $value3 = $solution_svg_inchi['value1'];
+	    $value4 = $solution_svg_inchi['value2'];
+	    
+	    
+	    return $this->refinery->string()->stripTags()->transform(
+	        html_entity_decode('SMILES=' . $value2 . ' + ' . $value4)
+	        );;
+	}
+	
+	/**
+	 * Saves a record to the question types additional data table.
+	 *
+	 * @return mixed
+	 */
+	public function saveAdditionalQuestionDataToDb()
+	{
+	    // nothing to save for JSME
+	    return 0;
+	}
+	
 }
 ?>

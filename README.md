@@ -1,7 +1,7 @@
 # assJSMEQuestion
-JSME-Questiontypeplugin for ILIAS 9
+JSME-Questiontypeplugin for ILIAS 10
 
-For ILIAS 4.3 to 8 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases) and the according branches.
+For ILIAS 4.3 to 9 see the [**Releases**](https://github.com/kyro46/assJSMEQuestion/releases) and the according branches.
 
 ### Questiontype that allows the creation of molecules ###
 
@@ -16,8 +16,8 @@ Using the free JSME-Editor, the questiontype allows to create molecules with an 
 Install the plugin
 
 ```bash
-mkdir -p Customizing/global/plugins/Modules/TestQuestionPool/Questions  
-cd Customizing/global/plugins/Modules/TestQuestionPool/Questions
+mkdir -p public/Customizing/global/plugins/Modules/TestQuestionPool/Questions  
+cd public/Customizing/global/plugins/Modules/TestQuestionPool/Questions
 git clone https://github.com/kyro46/assJSMEQuestion.git
 ```
 
@@ -25,15 +25,15 @@ Then follow the usual steps to update ILIAS from the ILIAS-Root-Dir:
 
 ```bash
 composer install --no-dev
-php setup/setup.php update
+php cli/setup.php update
 ```
 
 and activate it in the ILIAS-Admin-GUI.  
 
 To display the inline-SVGs in PDF this plugin needs the **PhantomJS-renderer or any other SVG-compatible renderer except TCPDF** in ILIAS 5.3+. 
 
-Automatic scoring with comparison of SMILE-Code IS implemented, but (due to SMILES-Notation) not valid for molecules with stereo features. Please be cautious.
-Activate manual scoring for better control.
+Automatic scoring with comparison of SMILE-Code is implemented, but (due to SMILES-Notation) not valid for molecules with stereo features. Please be cautious.
+The plugin alternatively supports the InChI notation for automatic scoring.
 
 ### Credits ###
 * Development of the plugin-draft for ILIAS 4.4 by Yves Annanias, University Halle, 2014

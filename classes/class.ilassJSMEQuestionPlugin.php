@@ -2,8 +2,7 @@
 	/**
 	* assJSMEQuestion plugin
 	*
-	* @author Yves Annanias <yves.annanias@llz.uni-halle.de>
-	* @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
+    * @author Christoph Jobst <iliasplugins.christoph.jobst@outlook.de>
 	* @version $Id$
 	*
 	*/
@@ -14,7 +13,7 @@
 			return "assJSMEQuestion";
 		}
 		
-		final function getQuestionType()
+		final function getQuestionType(): string
 		{
 			return "assJSMEQuestion";
 		}

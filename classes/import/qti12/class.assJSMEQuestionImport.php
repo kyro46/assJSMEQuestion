@@ -1,12 +1,9 @@
 <?php
 
-include_once "./Modules/TestQuestionPool/classes/import/qti12/class.assQuestionImport.php";
-
 /**
  * Class for assJSMEQuestion import
  *
- * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
- * @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
+ * @author Christoph Jobst <iliasplugins.christoph.jobst@outlook.de>
  * @version	$Id: $
  * @ingroup 	ModulesTestQuestionPool
  */
@@ -25,7 +22,7 @@ class assJSMEQuestionImport extends assQuestionImport
 	 * @param array $import_mapping An array containing references to included ILIAS objects
 	 * @access public
 	 */
-    function fromXML(&$item, $questionpool_id, &$tst_id, &$tst_object, &$question_counter, $import_mapping, array $solutionhints = []) : array
+    function fromXML(string $importdirectory, int $user_id, ilQTIItem $item, int $questionpool_id, ?int $tst_id, ?ilObject &$tst_object, int &$question_counter, array $import_mapping): array
     {
 		global $ilUser, $ilLog;
 
@@ -143,8 +140,6 @@ class assJSMEQuestionImport extends assQuestionImport
 		$questiontext = $this->object->getQuestion();
 		if (is_array($_SESSION["import_mob_xhtml"]))
 		{
-			include_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
-			include_once "./Services/RTE/classes/class.ilRTE.php";
 			foreach ($_SESSION["import_mob_xhtml"] as $mob)
 			{
 				if ($tst_id > 0)
@@ -184,6 +179,7 @@ class assJSMEQuestionImport extends assQuestionImport
 		$this->object->saveToDb();
 
 		// Save solutionhints
+		/*
 		foreach ($solutionhints as $hint) {
 		    $h = new ilAssQuestionHint();
 		    $h->setQuestionId($this->object->getId());
@@ -192,12 +188,13 @@ class assJSMEQuestionImport extends assQuestionImport
 		    $h->setText($hint['txt']);
 		    $h->save();
 		}
+		*/
 		
 		// import mapping for tests
 		if ($tst_id > 0)
 		{
 			$q_1_id = $this->object->getId();
-			$question_id = $this->object->duplicate(true, null, null, null, $tst_id);
+			$question_id = $this->object->duplicate(true, $this->object->getTitle(), $this->object->getAuthor(), $this->object->getOwner(), $tst_id);
 			$tst_object->questions[$question_counter++] = $question_id;
 			$import_mapping[$item->getIdent()] = array("pool" => $q_1_id, "test" => $question_id);
 		}

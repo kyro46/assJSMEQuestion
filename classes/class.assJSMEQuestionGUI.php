@@ -4,15 +4,14 @@
  * The assJSMEQuestionGUI class encapsulates the GUI representation
  * for Question-Type-Plugin.
  *
- * @author Yves Annanias <yves.annanias@llz.uni-halle.de>
- * @author Christoph Jobst <cjobst@wifa.uni-leipzig.de>
+ * @author Christoph Jobst <iliasplugins.christoph.jobst@outlook.de>
  * @version	$Id: $
  * @ingroup 	ModulesTestQuestionPool
  *
  * @ilctrl_iscalledby assJSMEQuestionGUI: ilObjQuestionPoolGUI, ilObjTestGUI, ilQuestionEditGUI, ilTestExpressPageObjectGUI
  * @ilctrl_calls assJSMEQuestionGUI: ilFormPropertyDispatchGUI
  */
-class assJSMEQuestionGUI extends assQuestionGUI
+class assJSMEQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjustable
 {	
     /**
      * @var assJSMEQuestionPlugin	The plugin object
@@ -24,6 +23,16 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 */
 	public assQuestion $object;
 	
+	public function getPlugin(): ilPlugin
+	{
+	    return $this->plugin;
+	}
+	
+	public function setPlugin(ilPlugin $plugin): void
+	{
+	    $this->plugin = $plugin;
+	}
+	
 	/**
 	 * Constructor
 	 *
@@ -32,135 +41,103 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 */
 	public function __construct($id = -1)
 	{
-	    global $DIC;
+	    global $tpl;
 	    
 	    parent::__construct();
 	    
-	    /** @var ilComponentFactory $component_factory */
-	    $component_factory = $DIC["component.factory"];
-	    $this->plugin = $component_factory->getPlugin('assJSMEQuestion');
+	    // init the plugin object
+	    try {
+	        global $DIC;
+	        
+	        /** @var ilComponentRepository $component_repository */
+	        $component_repository = $DIC["component.repository"];
+	        
+	        $info = null;
+	        $plugin_name = 'assJSMEQuestion';
+	        $info = $component_repository->getPluginByName($plugin_name);
+	        
+	        /** @var ilComponentFactory $component_factory */
+	        $component_factory = $DIC["component.factory"];
+	        
+	        /** @var ilQuestionsPlugin $plugin_obj */
+	        $plugin_obj = $component_factory->getPlugin($info->getId());
+	        
+	        if (!is_null($info) && $info->isActive()) {
+	            $this->setPlugin($plugin_obj);
+	        } else {
+	            throw new ilPluginException($plugin_name . ' plugin is not active');
+	        }
+	    } catch (ilPluginException $e) {
+	        global $tpl;
+	        $tpl->setOnScreenMessage('failure', $e->getMessage(), true);
+	    }
+	    
 	    $this->object = new assJSMEQuestion();
 	    if ($id >= 0)
 	    {
 	        $this->object->loadFromDb($id);
 	    }
 	}
-
-	/**
-	 * Creates an output of the edit form for the question
-	 *
-	 * @param bool $checkonly
-	 * @return bool
-	 */
-	public function editQuestion($checkonly = FALSE)
-	{
-		$this->initQuestionForm();
-		$this->getQuestionTemplate();
-		$this->tpl->setVariable("QUESTION_DATA", $this->form->getHTML());
-	}
 	
-	/**
-	 * Command: save the question
-	 */
-	public function save() : void
-	{
-		// assQuestionGUI::save() 
-		// - calls writePostData
-		// - redirects after successful saving
-		// - otherwise does nothing
-		parent::save();
-		
-		// question couldn't be saved
-		$this->form->setValuesByPost();
-		$this->getQuestionTemplate();
-		$this->tpl->setVariable("QUESTION_DATA", $this->form->getHTML());
-	}
-	
-	/**
-	 * Command: save and show page editor
-	 */
-	public function saveEdit() : void
-	{
-		// assQuestionGUI::saveEdit() 
-		// - calls writePostData
-		// - redirects after successful saving
-		// - otherwise does nothing
-		parent::saveEdit();
-		
-		// question couldn't be saved
-		$this->form->setValuesByPost();
-		$this->getQuestionTemplate();
-		$this->tpl->setVariable("QUESTION_DATA", $this->form->getHTML());
-	}
-
 	/**
 	* Creates an output of the edit form for the question
 	*
-	* @param	boolean		add a new booking to the form
+	* @param bool $checkonly
+	* @param bool $is_save_cmd
+	* @return bool
 	*/
-	private function initQuestionForm()
+	public function editQuestion(
+	    bool $checkonly = false,
+	    ?bool $is_save_cmd = null
+	    ): bool 
 	{
-		include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
-		$form = new ilPropertyFormGUI();
-		$form->setFormAction($this->ctrl->getFormAction($this));
-		$form->setTitle($this->outQuestionType());
-		$form->setMultipart(FALSE);
-		$form->setTableWidth("100%");
-		$form->setId("assJSMEQuestion");
+	    global $ilDB;
+	    
+	    $save = $is_save_cmd ?? $this->isSaveCommand();
+	    $plugin = $this->object->getPlugin();
+	    
+	    $this->getQuestionTemplate();
+	    $form = new ilPropertyFormGUI();
+	    $this->editForm = $form;
+	    
+	    $form->setFormAction($this->ctrl->getFormAction($this));
+	    $form->setTitle($this->plugin->txt("questionType"));
+	    $form->setMultipart(FALSE);
+	    $form->setTableWidth("100%");
+	    $form->setId("assJSMEQuestion");
 
-		// title, author, description, question, working time (assessment mode)
-		$this->addBasicQuestionFormProperties($form);
-
-		if ($this->object->getId())
-		{
-			$hidden = new ilHiddenInputGUI("", "ID");
-			$hidden->setValue($this->object->getId());
-			$form->addItem($hidden);
-		}
-
-		// points
-		$plugin = $this->object->getPlugin();
-		$points = new ilNumberInputGUI($plugin->txt("points"), "points");
-		$points->setSize(3);
-		$points->setMinValue(0);
-		$points->allowDecimals(1);
-		$points->setRequired(true);
-		$points->setValue($this->object->getPoints());
-		$form->addItem($points);
-		
-		// SMILES (0) or InChI (1) for evaluation
-		$radioGroup = new ilRadioGroupInputGUI($plugin->txt("label_evalOption"), 'evalOption');
-		$radioGroup->setInfo($plugin->txt("info_evalOption"));
-		$radioGroup->setValue((string) ((int) ($this->object->getEvaluationOption())));
-		$modeSMILES = new ilRadioOption(
-		    $plugin->txt("label_evalOption_smiles"),
-		    '0'
-		    );
-		$modeInChI = new ilRadioOption(
-		    $plugin->txt("label_evalOption_inchi"),
-		    '1'
-		    );
-		$radioGroup->addOption($modeSMILES);
-		$radioGroup->addOption($modeInChI);
-		$form->addItem($radioGroup);
-		
-		// optionString for the JSME-Applet
-		include_once("./Services/Form/classes/class.ilTextInputGUI.php");
-		$optionString = new ilTextInputGUI($plugin->txt("optionString"), "optionString");		
-		$optionString->setValue($this->object->getOptionString());				
-		$optionString->setInfo($plugin->txt("options_hint"));
-		$form->addItem($optionString);
-		
-		// JSME-Applet for sampleSolution
-		include_once("./Services/Form/classes/class.ilCustomInputGUI.php");
-		$sampleSolution = new ilCustomInputGUI($plugin->txt("sampleSolution"), "sampleSolution");
-		$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), $this->object->getInchiSolution());
-		$sampleSolution->setHtml($template->get());
-		$form->addItem($sampleSolution);												
-
-		$this->populateTaxonomyFormSection($form);
-		$this->addQuestionFormCommandButtons($form);
-		$this->form = $form;
+	    // Baseinput: title, author, description, question, working time (assessment mode)
+	    $this->addBasicQuestionFormProperties($form);
+	    
+	    // TODO Evaluate
+	    if ($this->object->getId())
+	    {
+	        $hidden = new ilHiddenInputGUI("", "ID");
+	        $hidden->setValue($this->object->getId());
+	        $form->addItem($hidden);
+	    }
+	    
+	    $this->populateQuestionSpecificFormPart($form);
+	    $this->populateAnswerSpecificFormPart($form);
+	    
+	    $this->populateTaxonomyFormSection($form);
+	    $this->addQuestionFormCommandButtons($form);
+	    
+	    $errors = false;
+	    
+	    if ($save)
+	    {
+	        $form->setValuesByPost();
+	        $errors = !$form->checkInput();
+	        $form->setValuesByPost(); // again, because checkInput now performs the whole stripSlashes handling and we need this if we don't want to have duplication of backslashes
+	        if ($errors) $checkonly = false;
+	    }
+	    
+	    if (!$checkonly)
+	    {
+	        $this->tpl->setVariable("QUESTION_DATA", $form->getHTML());
+	    }
+	    return $errors;
 	}
 
 	/**
@@ -171,8 +148,8 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 */
 	protected function writePostData($always = false): int
 	{
-		$this->initQuestionForm();
-		if ($this->form->checkInput())
+	    $hasErrors = (!$always) ? $this->editQuestion(true) : false;
+	    if (!$hasErrors)
 		{
             // write the basic data
 			$this->writeQuestionGenericPostData();
@@ -199,18 +176,46 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	}
 	
 	/**
+	 * Get the output for preview and test
+	 */
+	function getQuestionOutput($question, $options, $solution ,$smiles, $svg, $inchi, $temp="output.html")
+	{
+	    global $DIC, $tpl;
+	    
+	    $DIC->globalScreen()->layout()->meta()->addJs('Customizing/global/plugins/Modules/TestQuestionPool/Questions/assJSMEQuestion//templates/default/jsme/96E40B969193BD74B8A621486920E79C.cache.js');
+	    $DIC->globalScreen()->layout()->meta()->addJs('Customizing/global/plugins/Modules/TestQuestionPool/Questions/assJSMEQuestion/templates/default/jsme/jsme.nocache.js');
+	    	    
+	    $template = new ilTemplate($temp, true, true, 'public/Customizing/global/plugins/Modules/TestQuestionPool/Questions/assJSMEQuestion');
+	    $template->setVariable("QUESTIONTEXT", self::prepareTextareaOutput($question, TRUE));
+	    $template->setVariable("MOLECULE",$solution);
+	    $template->setVariable("SMILES",$smiles);
+	    $template->setVariable("INCHI",$inchi);
+	    $template->setVariable("OPTIONS", $options);
+	    $template->setVariable("SVG", $svg);
+	    
+	    return $template;
+	}	
+	
+	/**
 	 * Get the HTML output of the question for a test
 	 * (this function could be private)
 	 *
-	 * @param integer $active_id						The active user id
-	 * @param integer $pass								The test pass
-	 * @param boolean $is_postponed						Question is postponed
-	 * @param boolean $use_post_solutions				Use post solutions
-	 * @param boolean $show_specific_inline_feedback	Show a specific inline feedback
+	 * @param integer $active_id			           The active user id
+	 * @param integer $pass					           The test pass
+	 * @param boolean $is_question_postponed           Question is postponed
+	 * @param boolean $user_post_solutions	           Use post solutions
+	 * @param boolean $show_specific_inline_feedback   Show a feedback
 	 * @return string
 	 */
-	public function getTestOutput($active_id, $pass = NULL, $is_postponed = FALSE, $use_post_solutions = FALSE, $show_specific_inline_feedback = FALSE): string
+	public function getTestOutput(
+	    int $active_id,
+	    int $pass,
+	    bool $is_question_postponed = false,
+	    array|bool $user_post_solutions = false,
+	    bool $show_specific_inline_feedback = false
+	    ): string
 	{
+	    global $DIC; $tpl;
 		// get the solution of the user for the active pass or from the last pass if allowed
 		if (is_null($pass))
 		{
@@ -232,41 +237,19 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		
 		$template = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $userSmiles, $userSvg, $userInchi);
 		$questionoutput = $template->get();
-		$pageoutput = $this->outQuestionPage("", $is_postponed, $active_id, $questionoutput);
+		$pageoutput = $this->outQuestionPage("", $is_question_postponed, $active_id, $questionoutput);
 		return $pageoutput; 
 	}
-	
-	
-	/**
-	 * Get the output for preview and test
-	 */
-	function getQuestionOutput($question, $options, $solution ,$smiles, $svg, $inchi, $temp="output.html"){
-		global $tpl;	
-		$plugin       = $this->object->getPlugin();		
-		$template     = $plugin->getTemplate($temp);
 
-		$tpl->addJavaScript($plugin->getDirectory().'/templates/jsme/96E40B969193BD74B8A621486920E79C.cache.js');
-		$tpl->addJavaScript($plugin->getDirectory().'/templates/jsme/jsme.nocache.js');
-		$template->setVariable("QUESTIONTEXT", self::prepareTextareaOutput($question, TRUE));		
-		$template->setVariable("MOLECULE",$solution);
-		$template->setVariable("SMILES",$smiles);
-		$template->setVariable("INCHI",$inchi);
-		$template->setVariable("OPTIONS", $options);
-		$template->setVariable("SVG", $svg);
-		
-		return $template;
-	}	
-
-	
 	/**
 	 * Get the output for question preview
 	 * (called from ilObjQuestionPoolGUI)
 	 *
 	 * @param boolean	$show_question_only 	show only the question instead of embedding page (true/false)
-	 * @param boolean	$show_question_only
+	 * @param boolean	$show_inline_feedback
 	 * @return string
 	 */
-	public function getPreview($show_question_only = FALSE, $showInlineFeedback = FALSE)
+	public function getPreview(bool $show_question_only = false, bool $show_inline_feedback = false): string
 	{
 	    if( is_object($this->getPreviewSession()) )
 	    {
@@ -303,15 +286,16 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	 * @return string solution output of the question as HTML code
 	 */
 	function getSolutionOutput(
-	    $active_id,
-	    $pass = NULL,
-	    $graphicalOutput = FALSE,
-	    $result_output = FALSE,
-	    $show_question_only = TRUE,
-	    $show_feedback = FALSE,
-	    $show_correct_solution = FALSE,
-	    $show_manual_scoring = FALSE,
-	    $show_question_text = TRUE
+	    int $active_id,
+	    ?int $pass = null,
+	    bool $graphical_output = false,
+	    bool $result_output = false,
+	    bool $show_question_only = true,
+	    bool $show_feedback = false,
+	    bool $show_correct_solution = false,
+	    bool $show_manual_scoring = false,
+	    bool $show_question_text = true,
+	    bool $show_inline_feedback = true
 	): string
 	{
 		global $tpl;
@@ -320,7 +304,8 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		if (($active_id > 0) && (!$show_correct_solution))
 		{
 			// get the solutions of a user
-		    $user_solution = $this->object->getSolutionStored($active_id, $pass, true);
+			// deviation from standard: passing NULL for authorized allows usage of autosaves in results and manual scoring
+		    $user_solution = $this->object->getSolutionStored($active_id, $pass, null);
 		    if (!is_array($user_solution)) 
 			{
 				$user_solution = array();
@@ -351,25 +336,22 @@ class assJSMEQuestionGUI extends assQuestionGUI
 		}
 
 		// generate the question output
-		$solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html",TRUE, TRUE, "Modules/TestQuestionPool");
-				
+		$solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", true, true, "components/ILIAS/TestQuestionPool");
+		
 		if ($show_correct_solution)
 		{			
-			//$template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "", "solution.html");
 		    $template = $this->getQuestionOutput("", "", "", $this->object->getSmilesSolution(), $sampleSvg, $this->object->getInchiSolution(), "solution.html");
 			$template->setVariable("ID", 'S'.$this->object->getId());
 			return $template->get();			
 			// hier nur die Musterlösung anzeigen, da wir uns im test beim drücken von check befinden
 		}
 
-		//$templateUser = $this->getQuestionOutput($this->object->getQuestion(), $this->object->getOptionString(), $userSampleSolution, $user_solution[0]["value2"], $userSvg, "solution.html");
 		$templateUser = $this->getQuestionOutput($this->object->getQuestion(), "", "", $user_solution["value2"], $userSvg, $user_solution["value4"], "solution.html");
 		$templateUser->setVariable("ID", 'U'.$this->object->getId());
 		$questionoutput = $templateUser->get();
 		
 		if ($show_manual_scoring && strlen($this->object->getSampleSolution()) > 0 )
 		{
-			//$templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), "solution.html");
 		    $templateSample = $this->getQuestionOutput($this->object->getPlugin()->txt("sampleSolution"), "", "", $this->object->getSmilesSolution(), $sampleSvg,  $this->object->getInchiSolution(), "solution.html");
 			$templateSample->setVariable("ID", 'S'.$this->object->getId());
 			$questionoutput .= "<br>" . $templateSample->get();
@@ -420,6 +402,124 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	public function setQuestionTabs(): void
 	{
 	    parent::setQuestionTabs();
+	}
+
+	/**
+	 * Adds the question specific forms parts to a question property form gui.
+	 */
+	public function populateQuestionSpecificFormPart(ilPropertyFormGUI $form): ilPropertyFormGUI
+	{
+	    $plugin = $this->object->getPlugin();
+	    
+	    $form->setTitle($this->plugin->txt("questionType"));
+	    
+	    //Start Question specific
+	    // points
+	    $points = new ilNumberInputGUI($plugin->txt("points"), "points");
+	    $points->setSize(3);
+	    $points->setMinValue(0);
+	    $points->allowDecimals(1);
+	    $points->setRequired(true);
+	    $points->setValue($this->object->getPoints());
+	    $form->addItem($points);
+	    
+	    return $form;
+	}
+	
+	/**
+	 * Extracts the question specific values from the request and applies them
+	 * to the data object.
+	 */
+	public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
+	{
+	    $this->object->setPoints($this->request_data_collector->float('points'));
+	}
+	
+	/**
+	 * Returns a list of postvars which will be suppressed in the form output when used in scoring adjustment.
+	 * The form elements will be shown disabled, so the users see the usual form but can only edit the settings, which
+	 * make sense in the given context.
+	 *
+	 * E.g. array('cloze_type', 'image_filename')
+	 *
+	 * @return string[]
+	 */
+	public function getAfterParticipationSuppressionQuestionPostVars(): array
+	{
+	    return [];
+	}
+	
+	public function populateAnswerSpecificFormPart(\ilPropertyFormGUI $form): ilPropertyFormGUI
+	{
+	    $plugin = $this->object->getPlugin();
+	    
+	    // SMILES (0) or InChI (1) for evaluation
+	    $radioGroup = new ilRadioGroupInputGUI($plugin->txt("label_evalOption"), 'evalOption');
+	    $radioGroup->setInfo($plugin->txt("info_evalOption"));
+	    $radioGroup->setValue((string) ((int) ($this->object->getEvaluationOption())));
+	    $modeSMILES = new ilRadioOption(
+	        $plugin->txt("label_evalOption_smiles"),
+	        '0'
+	        );
+	    $modeInChI = new ilRadioOption(
+	        $plugin->txt("label_evalOption_inchi"),
+	        '1'
+	        );
+	    $radioGroup->addOption($modeSMILES);
+	    $radioGroup->addOption($modeInChI);
+	    $form->addItem($radioGroup);
+	    
+	    // optionString for the JSME-Applet
+	    $optionString = new ilTextInputGUI($plugin->txt("optionString"), "optionString");
+	    $optionString->setValue($this->object->getOptionString());
+	    $optionString->setInfo($plugin->txt("options_hint"));
+	    $form->addItem($optionString);
+	    
+	    // JSME-Applet for sampleSolution
+	    $sampleSolution = new ilCustomInputGUI($plugin->txt("sampleSolution"), "sampleSolution");
+	    $template = $this->getQuestionOutput("", $this->object->getOptionString(), $this->object->getSampleSolution(), $this->object->getSmilesSolution(), $this->object->getSvg(), $this->object->getInchiSolution());
+	    $sampleSolution->setHtml($template->get());
+	    $form->addItem($sampleSolution);
+	         
+	    return $form;
+	}
+	
+	public function writeAnswerSpecificPostData(ilPropertyFormGUI $form): void
+	{
+	    #not needed for JSME
+	}
+	
+	/**
+	 * Returns a list of postvars which will be suppressed in the form output when used in scoring adjustment.
+	 * The form elements will be shown disabled, so the users see the usual form but can only edit the settings, which
+	 * make sense in the given context.
+	 *
+	 * E.g. array('cloze_type', 'image_filename')
+	 *
+	 * @return string[]
+	 */
+	public function getAfterParticipationSuppressionAnswerPostVars(): array
+	{
+	    return [];
+	}
+	
+	public function populateCorrectionsFormProperties(ilPropertyFormGUI $form): void
+	{
+	    $this->populateQuestionSpecificFormPart($form);
+	}
+	
+	/**
+	 * @param ilPropertyFormGUI $form
+	 */
+	public function saveCorrectionsFormProperties(ilPropertyFormGUI $form): void
+	{
+	    $this->object->setPoints((float) str_replace(',', '.', $form->getInput('points')));
+	    // TODO let user change more inputs?
+	}
+	
+	public function prepareReprintableCorrectionsForm(ilPropertyFormGUI $form): void
+	{
+	    #not needed for JSME
 	}
 }
 ?>

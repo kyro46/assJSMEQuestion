@@ -12,5 +12,5 @@ label_evalOption_smiles#:#SMILES
 label_evalOption_inchi#:#InChI
 info_evalOption#:#Specifies the representation of the molecule used for automatic evaluation. InChI notation is only available in newly created questions or after changing the existing sample molecule (see notations below the editor). Old answers in tests only contain SMILES and will per fallback always be evaluated this way.
 options_hint#:# Options are separated by space. A list of options can be found <a target="_blank" href="https://jsme-editor.github.io/dist/doc.html">HERE</a>, in section "JSME Options".<br/>The default options "nosearchinchiKey nopaste" deactivate ways to access the file system and a websearch. 
-old_plugin_solution#:#Solution does not exist or was created with old JSME-version (no SVG). 
+old_plugin_solution#:#No solution stored. 
 old_plugin_question#:#Question created with old JSME-version (no SVG). 
