@@ -25,6 +25,11 @@ class assJSMEQuestionGUI extends assQuestionGUI
 	public assQuestion $object;
 	
 	/**
+	 * @var ilPropertyFormGUI	The edit form
+	 */
+	var $form = null;
+	
+	/**
 	 * Constructor
 	 *
 	 * @param integer $id The database id of a question object
